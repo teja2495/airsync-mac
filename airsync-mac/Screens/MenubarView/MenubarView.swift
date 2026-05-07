@@ -68,6 +68,7 @@ struct MenubarView: View {
                 .staggeredEntrance(index: 3, isVisible: appState.isMenubarWindowOpen)
         }
         .padding(.horizontal, 24)
+        .padding(.top, 24)
         .padding(.bottom, 24)
         .frame(width: minWidthTabs + 48)
         .environment(\.controlActiveState, .active)
