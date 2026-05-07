@@ -104,14 +104,17 @@ struct TopSegmentView: View {
                         }
                     }
                 }
-                
-                GlassButtonView(
-                    label: "DND",
-                    systemImage: appState.silenceAllNotifications ? "bell.slash.fill" : "bell.badge",
-                    iconOnly: true,
-                    circleSize: toolButtonSize
-                ) {
-                    appState.silenceAllNotifications.toggle()
+
+
+                if appState.device != nil {
+                    GlassButtonView(
+                        label: "DND",
+                        systemImage: appState.silenceAllNotifications ? "bell.slash.fill" : "bell.badge",
+                        iconOnly: true,
+                        circleSize: toolButtonSize
+                    ) {
+                        appState.silenceAllNotifications.toggle()
+                    }
                 }
             }
             
@@ -165,8 +168,20 @@ struct MediaSegmentView: View {
     @ObservedObject var appState = AppState.shared
     
     var body: some View {
-        if appState.status != nil {
+        if let status = appState.status {
             DeviceStatusView(showMediaToggle: true)
+                .background {
+                    let artwork = status.music.albumArt
+                    if !appState.isMusicCardHidden,
+                       !artwork.isEmpty,
+                       let data = Data(base64Encoded: artwork),
+                       let image = NSImage(data: data) {
+                        Image(nsImage: image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 20))
                 .transition(.scale.combined(with: .opacity))
                 .animation(.interpolatingSpring(stiffness: 200, damping: 30), value: appState.isMusicCardHidden)
         }

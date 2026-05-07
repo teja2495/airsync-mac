@@ -19,7 +19,7 @@ struct MenuBarNotificationsListView: View {
                     deleteNotification: { appState.removeNotification(notif) },
                     hideNotification: { appState.hideNotification(notif) }
                 )
-                .padding(10)
+                .padding(6)
                 .segmentStyle()
             }
             
@@ -49,9 +49,15 @@ struct MenuBarNotificationsListView: View {
                         Image(systemName: "xmark")
                             .font(.system(size: 10, weight: .bold))
                             .frame(width: 28, height: 28)
-                            .segmentStyle(cornerRadius: 14)
+
+                        if appState.notifications.count <= displayLimit {
+                            Text("Clear All")
+                                .font(.system(size: 11, weight: .medium))
+                                .padding(.trailing, 8)
+                        }
                     }
                     .buttonStyle(.plain)
+                    .segmentStyle(cornerRadius: 14)
                 }
                 .padding(.top, 4)
             }
