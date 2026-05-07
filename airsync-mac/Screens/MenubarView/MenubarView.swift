@@ -45,16 +45,40 @@ struct MenubarView: View {
     }
 
     private let minWidthTabs: CGFloat = 280
-    private let toolButtonSize: CGFloat = 38
+    private let toolButtonSize: CGFloat = 42
 
     var body: some View {
         VStack {
             VStack(spacing: 12){
-                // Header
-                Text("AirSync - \(getDeviceName())")
-                    .font(.headline)
+                HStack{
+                    Image(nsImage: NSImage(named: "AppIcon")!)
+                        .resizable()
+                        .font(.system(size: 16))
+                        .frame(width: toolButtonSize, height: toolButtonSize)
 
-                HStack(spacing: 10){
+                    Menu {
+                        #if DEBUG
+                            Button("Crash", systemImage: "bolt.trianglebadge.exclamationmark") {
+                                fatalError("Sentry Test Crash")
+                            }
+                        #endif
+
+                        Button("Quit", systemImage: "power") {
+                            NSApplication.shared.terminate(nil)
+                        }
+                    } label: {
+
+                        Text("AirSync")
+                            .font(.title)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .focusable(false)
+
+                    ConnectionStatusPill()
+                        .focusable(false)
+
+                    Spacer()
+
                     GlassButtonView(
                         label: "Open App",
                         systemImage: "arrow.up.forward.app",
@@ -63,11 +87,14 @@ struct MenubarView: View {
                     ) {
                         openAndFocusMainWindow()
                     }
+                }
+
+                HStack(spacing: 4){
 
                     if (appState.device != nil){
                         GlassButtonView(
-                            label: "Sync Clipboard",
-                            systemImage: "doc.on.clipboard",
+                            label: "Send Clipboard",
+                            systemImage: "clipboard",
                             iconOnly: true,
                             circleSize: toolButtonSize,
                             action: {
@@ -102,8 +129,8 @@ struct MenubarView: View {
                         )
                         
                         GlassButtonView(
-                            label: "Send",
-                            systemImage: "paperplane.fill",
+                            label: "QuickShare",
+                            systemImage: "square.and.arrow.up",
                             iconOnly: true,
                             circleSize: toolButtonSize,
                             action: {
@@ -169,36 +196,17 @@ struct MenubarView: View {
                     }
 
                     GlassButtonView(
-                        label: appState.silenceAllNotifications ? "Disable DND" : "Enable DND",
+                        label: "DND",
                         systemImage: appState.silenceAllNotifications ? "bell.slash.fill" : "bell.badge",
                         iconOnly: true,
-                        circleSize: toolButtonSize
+                        circleSize: toolButtonSize,
                     ) {
                         appState.silenceAllNotifications.toggle()
                     }
                     .help(appState.silenceAllNotifications ? "Do Not Disturb is ON" : "Turn on Do Not Disturb")
 
-                    GlassButtonView(
-                        label: "Quit",
-                        systemImage: "power",
-                        iconOnly: true,
-                        circleSize: toolButtonSize
-                    ) {
-                        NSApplication.shared.terminate(nil)
-                    }
 
-                    #if DEBUG
-                    GlassButtonView(
-                        label: "Crash",
-                        systemImage: "bolt.trianglebadge.exclamationmark",
-                        iconOnly: true,
-                        circleSize: toolButtonSize
-                    ) {
-                        fatalError("Sentry Test Crash")
-                    }
-                    #endif
                 }
-                .padding(8)
 
                 if appState.adbConnected && !appState.recentApps.isEmpty {
                     RecentAppsGridView()
@@ -228,6 +236,11 @@ struct MenubarView: View {
                         }
                     )
                     .help("Clear all notifications")
+                }
+
+                if appState.device == nil {
+                    MenubarDeviceDiscoveryView()
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
             .padding(10)
