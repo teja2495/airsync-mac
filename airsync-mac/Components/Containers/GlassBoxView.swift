@@ -67,5 +67,15 @@ extension View {
         self.applyGlassViewIfAvailable(cornerRadius: cornerRadius)
             .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 5)
     }
+    
+    public func staggeredEntrance(index: Int, isVisible: Bool) -> some View {
+        self.offset(y: isVisible ? 0 : -12)
+            .opacity(isVisible ? 1 : 0)
+            .animation(
+                .interpolatingSpring(stiffness: 120, damping: 14)
+                .delay(Double(index) * 0.05 + 0.05),
+                value: isVisible
+            )
+    }
 }
 

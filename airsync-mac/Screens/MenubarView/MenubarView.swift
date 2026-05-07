@@ -47,6 +47,8 @@ struct MenubarView: View {
     private let minWidthTabs: CGFloat = 360
     private let toolButtonSize: CGFloat = 42
 
+    @State private var isAppearing = false
+
     var body: some View {
         VStack(spacing: 6) {
             // Arrow (if needed, but usually we just want it on the top segment)
@@ -63,14 +65,16 @@ struct MenubarView: View {
                 )
             }
             .padding(.top, 8)
+            .staggeredEntrance(index: 0, isVisible: appState.isMenubarWindowOpen)
             
             DiscoverySegmentView()
-            
-//            StatusSegmentView()
+                .staggeredEntrance(index: 1, isVisible: appState.isMenubarWindowOpen)
             
             MediaSegmentView()
+                .staggeredEntrance(index: 2, isVisible: appState.isMenubarWindowOpen)
             
             NotificationsSegmentView()
+                .staggeredEntrance(index: 3, isVisible: appState.isMenubarWindowOpen)
         }
         .padding(.horizontal, 24)
         .padding(.bottom, 24)
