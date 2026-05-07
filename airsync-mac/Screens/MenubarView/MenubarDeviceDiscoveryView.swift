@@ -14,9 +14,6 @@ struct MenubarDeviceDiscoveryView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !udpDiscovery.discoveredDevices.isEmpty {
-                Divider()
-                    .padding(.vertical, 4)
-                
                 Text("Nearby Devices")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(.secondary)
@@ -42,7 +39,6 @@ struct MenubarDeviceDiscoveryView: View {
                 }
             }
         }
-        .padding(.horizontal, 10)
     }
 }
 
