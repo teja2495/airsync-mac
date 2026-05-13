@@ -369,16 +369,15 @@ struct ADBConnector {
         let bitrate = AppState.shared.scrcpyBitrate
         let resolution = AppState.shared.scrcpyResolution
         let wiredAdbEnabled = AppState.shared.wiredAdbEnabled
-        let desktopMode = UserDefaults.standard.scrcpyDesktopMode
         let alwaysOnTop = UserDefaults.standard.scrcpyOnTop
         let stayAwake = UserDefaults.standard.stayAwake
         let turnScreenOff = UserDefaults.standard.turnScreenOff
-        let appRes = UserDefaults.standard.scrcpyShareRes ? UserDefaults.standard.scrcpyDesktopMode : "900x2100"
         let noAudio = UserDefaults.standard.noAudio
         let manualPosition = UserDefaults.standard.manualPosition
         let manualPositionCoords = UserDefaults.standard.manualPositionCoords
         let continueApp = UserDefaults.standard.continueApp
         let directKeyInput = UserDefaults.standard.directKeyInput
+        let dpi = UserDefaults.standard.scrcpyDesktopDpi
 
         DispatchQueue.global(qos: .userInitiated).async {
             guard let scrcpyPath = findExecutable(named: "scrcpy", fallbackPaths: possibleScrcpyPaths) else {
@@ -396,7 +395,6 @@ struct ADBConnector {
                 "--window-title=\(deviceNameFormatted)",
                 "--video-bit-rate=\(bitrate)M",
                 "--video-codec=h265",
-                "--max-size=\(resolution)",
                 "--no-power-on"
             ]
 
@@ -421,14 +419,18 @@ struct ADBConnector {
                     if noAudio { args.append("--no-audio") }
                     if directKeyInput { args.append("--keyboard=uhid") }
 
+                    let displayArg = "/\(dpi)"
+
                     if desktop ?? true {
-                        let res = desktopMode ?? "1600x1000"
-                        let dpi = UserDefaults.standard.string(forKey: "scrcpyDesktopDpi") ?? ""
-                        args.append("--new-display=\(res)" + (!dpi.isEmpty ? "/\(dpi)" : ""))
+                        args.append("--new-display=\(displayArg)")
+                        args.append("-x")
+                    } else if package == nil {
+                        // Only add max-size for regular mirror
+                        args.append("--max-size=\(resolution)")
                     }
 
                     if let pkg = package {
-                        args.append(contentsOf: ["--new-display=\(appRes ?? "900x2100")", "--start-app=\(pkg)", "--no-vd-system-decorations"])
+                        args.append(contentsOf: ["--new-display=\(displayArg)", "--start-app=\(pkg)", "--no-vd-system-decorations", "-x"])
                         if continueApp { args.append("--no-vd-destroy-content") }
                     }
 

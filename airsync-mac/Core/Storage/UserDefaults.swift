@@ -14,8 +14,7 @@ extension UserDefaults {
         static let consecutiveLicenseFailCount = "consecutiveLicenseFailCount"
         static let consecutiveNetworkFailureDays = "consecutiveNetworkFailureDays"
         static let scrcpyOnTop = "scrcpyOnTop"
-        static let scrcpyShareRes = "scrcpyShareRes"
-        static let scrcpyDesktopMode = "scrcpyDesktopMode"
+        static let scrcpyDesktopDpi = "scrcpyDesktopDpi"
         static let lastADBCommand = "lastADBCommand"
         static let stayAwake = "stayAwake"
         static let turnScreenOff = "turnScreenOff"
@@ -61,14 +60,9 @@ extension UserDefaults {
         set { set(newValue, forKey: Keys.scrcpyOnTop)}
     }
 
-    var scrcpyShareRes: Bool {
-        get { bool(forKey: Keys.scrcpyShareRes)}
-        set { set(newValue, forKey: Keys.scrcpyShareRes)}
-    }
-
-    var scrcpyDesktopMode: String? {
-        get { object(forKey: Keys.scrcpyDesktopMode) as? String }
-        set { set(newValue, forKey: Keys.scrcpyDesktopMode) }
+    var scrcpyDesktopDpi: String {
+        get { string(forKey: Keys.scrcpyDesktopDpi) ?? "192" }
+        set { set(newValue, forKey: Keys.scrcpyDesktopDpi) }
     }
 
     var lastADBCommand: String? {

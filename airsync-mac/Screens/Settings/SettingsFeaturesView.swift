@@ -11,7 +11,6 @@ import Foundation
 
 struct SettingsFeaturesView: View {
     @ObservedObject var appState = AppState.shared
-    @AppStorage("scrcpyShareRes") private var scrcpyShareRes = false
     @AppStorage("scrcpyOnTop") private var scrcpyOnTop = false
     @AppStorage("stayAwake") private var stayAwake = false
     @AppStorage("turnScreenOff") private var turnScreenOff = false
@@ -225,30 +224,13 @@ struct SettingsFeaturesView: View {
 
                                 SettingsToggleView(name: "Direct keyboard input", icon: "keyboard.chevron.compact.down", isOn: $directKeyInput)
 
-                                SettingsToggleView(name: "Apps & Desktop mode shared resolution", icon: "ipad.sizes", isOn: $scrcpyShareRes)
-
-                                HStack {
-                                    Text(UserDefaults.standard.scrcpyShareRes ? "Desktop and App mirroring" :"Desktop mode")
-                                    Spacer()
-
-                                    Picker("", selection: Binding(
-                                        get: { UserDefaults.standard.scrcpyDesktopMode },
-                                        set: { UserDefaults.standard.scrcpyDesktopMode = $0 }
-                                    )) {
-                                        Text("2560x1440").tag("2560x1440")
-                                        Text("2560x1600").tag("2560x1600")
-                                        Text("2000x1800").tag("2000x1800")
-                                    }
-                                    .pickerStyle(MenuPickerStyle())
-                                }
-
                                 HStack {
                                     Text("dpi")
                                     Spacer()
                                     TextField("dpi", text: Binding(
-                                        get: { UserDefaults.standard.string(forKey: "scrcpyDesktopDpi") ?? "" },
+                                        get: { UserDefaults.standard.scrcpyDesktopDpi },
                                         set: { newValue in
-                                            UserDefaults.standard.set(newValue.filter { "0123456789".contains($0) }, forKey: "scrcpyDesktopDpi")
+                                            UserDefaults.standard.scrcpyDesktopDpi = newValue.filter { "0123456789".contains($0) }
                                         }
                                     ))
                                     .textFieldStyle(.roundedBorder)
