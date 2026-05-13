@@ -34,6 +34,8 @@ class MacInfoSyncManager: ObservableObject {
             let isMuted: Bool
             let albumArt: String
             let likeStatus: String
+            let elapsedTime: Int
+            let duration: Int
         }
         let batteryLevel: Int
         let isCharging: Bool
@@ -216,7 +218,9 @@ class MacInfoSyncManager: ObservableObject {
                 volume: MacRemoteManager.shared.lastVolumeLevel,
                 isMuted: MacRemoteManager.shared.lastVolumeLevel == 0,
                 albumArt: currentHash ?? "", // Use hash for snapshot comparison
-                likeStatus: "none" // must match payload default
+                likeStatus: "none", // must match payload default
+                elapsedTime: Int(info.elapsedTime ?? 0),
+                duration: Int(info.duration ?? 0)
             )
         }()
 

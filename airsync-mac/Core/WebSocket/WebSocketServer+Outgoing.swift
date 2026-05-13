@@ -153,7 +153,11 @@ extension WebSocketServer {
                 "artist": musicInfo.artist ?? "",
                 "volume": MacRemoteManager.shared.lastVolumeLevel,
                 "isMuted": MacRemoteManager.shared.lastVolumeLevel == 0,
-                "likeStatus": "none"
+                "likeStatus": "none",
+                "elapsedTime": musicInfo.elapsedTime ?? 0,
+                "duration": musicInfo.duration ?? 0,
+                "timestamp": musicInfo.timestamp ?? "",
+                "playbackRate": musicInfo.playbackRate ?? 1.0
             ]
             
             if let art = albumArtBase64 {
