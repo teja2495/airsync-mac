@@ -19,13 +19,12 @@ struct DeviceStatusView: View {
     var body: some View {
 
         VStack {
-            if let music = appState.status?.music,
-               let title = appState.status?.music.title.trimmingCharacters(in: .whitespacesAndNewlines),
-               !title.isEmpty,
-               !appState.isMusicCardHidden, showMediaToggle {
-
-                MediaPlayerView(music: music)
-                    .transition(.opacity.combined(with: .scale))
+            if let music = appState.status?.music {
+                let title = music.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !title.isEmpty && !appState.isMusicCardHidden && showMediaToggle {
+                    MediaPlayerView(music: music)
+                        .transition(.opacity.combined(with: .scale))
+                }
             }
 
             HStack(spacing: 8) {
@@ -42,8 +41,8 @@ struct DeviceStatusView: View {
                 }
                 .padding(.leading, 4)
 
-                let volume = appState.status?.music.volume ?? 100
-                let isMuted = appState.status?.music.isMuted ?? false
+                let volume = appState.status?.music?.volume ?? 100
+                let isMuted = appState.status?.music?.isMuted ?? false
 
                 GlassButtonView(
                     label: "Music Player",
@@ -52,7 +51,7 @@ struct DeviceStatusView: View {
                     primary: false,
                     action: {
                         if AppState.shared.isPlus && AppState.shared.licenseCheck {
-                            if let currentVolume = appState.status?.music.volume {
+                            if let currentVolume = appState.status?.music?.volume {
                                 tempVolume = Double(currentVolume)
                             }
                             showingVolumePopover.toggle()
@@ -89,23 +88,24 @@ struct DeviceStatusView: View {
                     .popover(isPresented: $showingPlusPopover, arrowEdge: .bottom) {
                         PlusFeaturePopover(message: "Control volume with AirSync+")
                     }
-
-                if let title = appState.status?.music.title.trimmingCharacters(in: .whitespacesAndNewlines),
-                   !title.isEmpty && showMediaToggle {
-                    
-                    GlassButtonView(
-                        label: "Music Player",
-                        systemImage: appState.status?.music.isPlaying == true ? "play.rectangle" : "music.note",
-                        iconOnly: true,
-                        primary: false,
-                        action: {
-                            withAnimation(.easeInOut(duration: 0.28)) {
-                                appState.isMusicCardHidden.toggle()
+ 
+                if let music = appState.status?.music {
+                    let title = music.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !title.isEmpty && showMediaToggle {
+                        GlassButtonView(
+                            label: "Music Player",
+                            systemImage: music.isPlaying == true ? "play.rectangle" : "music.note",
+                            iconOnly: true,
+                            primary: false,
+                            action: {
+                                withAnimation(.easeInOut(duration: 0.28)) {
+                                    appState.isMusicCardHidden.toggle()
+                                }
                             }
-                        }
-                    )
-                    .help(appState.isMusicCardHidden ? "Show player" : "Hide player")
-                    .transition(.opacity.combined(with: .scale))
+                        )
+                        .help(appState.isMusicCardHidden ? "Show player" : "Hide player")
+                        .transition(.opacity.combined(with: .scale))
+                    }
                 }
             }
             .padding(.bottom, appState.isMusicCardHidden ? 0 : 8)
@@ -115,17 +115,17 @@ struct DeviceStatusView: View {
         .applyGlassViewIfAvailable()
         .animation(
             .easeInOut(duration: 0.25),
-            value: "\(appState.status?.battery.level ?? 0)-\(appState.status?.music.volume ?? 0)"
+            value: "\(appState.status?.battery.level ?? 0)-\(appState.status?.music?.volume ?? 0)"
         )
         .onAppear {
             // Ensure media card is collapsed at startup if no media is present
             checkAndCollapseIfNoMedia()
         }
-        .onChange(of: appState.status?.music.title) { _, newTitle in
+        .onChange(of: appState.status?.music?.title) { _, newTitle in
             // Auto-collapse music card when there's no media playing
             checkAndCollapseIfNoMedia()
         }
-        .onChange(of: appState.status?.music.artist) { _, newArtist in
+        .onChange(of: appState.status?.music?.artist) { _, newArtist in
             // Also check when artist changes (could become empty)
             checkAndCollapseIfNoMedia()
         }

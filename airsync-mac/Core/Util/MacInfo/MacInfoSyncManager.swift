@@ -9,6 +9,7 @@ import Combine
 import CryptoKit
 
 class MacInfoSyncManager: ObservableObject {
+    static let shared = MacInfoSyncManager()
     @Published var title: String = "Unknown Title"
     @Published var artist: String = "Unknown Artist"
     @Published var album: String = "Unknown Album"
@@ -96,7 +97,7 @@ class MacInfoSyncManager: ObservableObject {
         }
     }
 
-    private func fetch() {
+    func fetch() {
         // Only fetch if there's a connected device
         guard AppState.shared.device != nil else { return }
 

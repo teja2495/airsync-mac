@@ -10,7 +10,7 @@ import Foundation
 struct Device: Codable, Hashable, Identifiable {
     let id = UUID()
     
-    let name: String
+    var name: String
     let ipAddress: String
     let port: Int
     let version: String

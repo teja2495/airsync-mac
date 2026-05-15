@@ -149,6 +149,52 @@ struct SettingsView: View {
                     .background(.background.opacity(0.3))
                     .cornerRadius(12.0)
 
+                    // 4. Bluetooth LE Sync
+                    headerSection(title: "Bluetooth LE Sync", icon: "point.3.connected.trianglepath.dotted")
+                    VStack {
+                        HStack {
+                            Label("Enable BLE Sync", systemImage: "bapp.connected.to.app.below.fill")
+                            Spacer()
+                            Toggle("", isOn: $appState.isBLEEnabled)
+                                .toggleStyle(.switch)
+                        }
+                        
+                        if appState.isBLEEnabled {
+                            HStack {
+                                Label("BLE Auto-connect", systemImage: "arrow.triangle.2.circlepath")
+                                Spacer()
+                                Toggle("", isOn: $appState.isBLEAutoConnectEnabled)
+                                    .toggleStyle(.switch)
+                            }
+                            
+                            switch BLECentralManager.shared.connectionStatus {
+                            case .scanning:
+                                Text("Scanning for phone...")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            case .connected:
+                                Text("Connected (Authenticating...)")
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            case .authenticated:
+                                Text("Connected & Authenticated")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            case .disconnected:
+                                Text("Disconnected")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(.background.opacity(0.3))
+                    .cornerRadius(12.0)
+
                     // 4. Appearance
                     headerSection(title: "Appearance", icon: "paintbrush")
                     VStack(spacing: 12) {

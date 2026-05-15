@@ -83,16 +83,16 @@ struct PhoneView: View {
                     }
             )
             .onAppear { updateImage() }
-            .onChange(of: appState.status?.music.isPlaying) { updateImage() }
-            .onChange(of: appState.status?.music.albumArt) { updateImage() }
+            .onChange(of: appState.status?.music?.isPlaying) { updateImage() }
+            .onChange(of: appState.status?.music?.albumArt) { updateImage() }
             .onChange(of: AppState.shared.currentDeviceWallpaperBase64) { updateImage() }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
     }
 
     private func updateImage() {
-        let base64 = (appState.status?.music.isPlaying ?? false)
-            ? appState.status?.music.albumArt
+        let base64 = (appState.status?.music?.isPlaying ?? false)
+            ? appState.status?.music?.albumArt
             : AppState.shared.currentDeviceWallpaperBase64
 
         guard let base64 = base64,

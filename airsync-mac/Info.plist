@@ -85,5 +85,7 @@
 	<string>$(TRIAL_SECRET)</string>
 	<key>UpdateFeedURL</key>
 	<string>https://sameerasw.github.io/airsync-mac/releases/latest</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>AirSync uses Bluetooth to sync notifications and media controls with your Android phone when Wi-Fi is unavailable.</string>
 </dict>
 </plist>

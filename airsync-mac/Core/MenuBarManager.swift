@@ -59,13 +59,15 @@ class MenuBarManager: NSObject {
     
     private func setupBindings() {
         // Update menu bar when appState changes
-        Publishers.Merge5(
-            appState.$device.map { _ in () },
-            appState.$notifications.map { _ in () },
-            appState.$status.map { _ in () },
-            appState.$showMenubarText.map { _ in () },
-            appState.$showingQuickShareTransfer.map { _ in () }
-        )
+        Publishers.MergeMany([
+            appState.$device.map { _ in () }.eraseToAnyPublisher(),
+            appState.$notifications.map { _ in () }.eraseToAnyPublisher(),
+            appState.$status.map { _ in () }.eraseToAnyPublisher(),
+            appState.$showMenubarText.map { _ in () }.eraseToAnyPublisher(),
+            appState.$showingQuickShareTransfer.map { _ in () }.eraseToAnyPublisher(),
+            BLECentralManager.shared.$connectionStatus.map { _ in () }.eraseToAnyPublisher(),
+            BLECentralManager.shared.$connectedDeviceName.map { _ in () }.eraseToAnyPublisher()
+        ])
         .receive(on: RunLoop.main)
         .sink { [weak self] in
             self?.updateStatusItem()
@@ -78,7 +80,8 @@ class MenuBarManager: NSObject {
         guard let button = statusItem?.button else { return }
         
         // Update icon based on state
-        let iconName = appState.device != nil
+        let isConnected = appState.device != nil || BLECentralManager.shared.isAuthenticated
+        let iconName = isConnected
             ? (appState.notifications.isEmpty ? "iphone.gen3" : "iphone.gen3.radiowaves.left.and.right")
             : "iphone.slash"
         
@@ -106,7 +109,8 @@ class MenuBarManager: NSObject {
     }
     
     private func getDeviceStatusText() -> String? {
-        guard let device = appState.device else { return nil }
+        let connectedDeviceName = appState.device?.name ?? BLECentralManager.shared.connectedDeviceName
+        guard let name = connectedDeviceName else { return nil }
         
         let unreadCount = appState.notifications.count
         let unreadPrefix = unreadCount > 0 ? "\(unreadCount)* • " : ""
@@ -119,7 +123,7 @@ class MenuBarManager: NSObject {
         } else {
             var parts: [String] = []
             if appState.showMenubarDeviceName {
-                parts.append(device.name)
+                parts.append(name)
             }
             
             if let batteryLevel = appState.status?.battery.level {

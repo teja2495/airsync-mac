@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ConnectionStatusPill: View {
     @ObservedObject var appState = AppState.shared
+    @ObservedObject var bleManager = BLECentralManager.shared
     @State private var showingPopover = false
     @State private var isHovered = false
     
@@ -18,9 +19,11 @@ struct ConnectionStatusPill: View {
         }) {
             HStack(spacing: 8) {
                 // Network Connection Icon
-                Image(systemName: appState.isConnectedOverLocalNetwork ? "wifi" : "globe")
-                    .contentTransition(.symbolEffect(.replace))
-                    .help(appState.isConnectedOverLocalNetwork ? "Local WiFi" : "Extended Connection (Tailscale)")
+                if let ip = appState.device?.ipAddress, ip != "BLE" {
+                    Image(systemName: appState.isConnectedOverLocalNetwork ? "wifi" : "globe")
+                        .contentTransition(.symbolEffect(.replace))
+                        .help(appState.isConnectedOverLocalNetwork ? "Local WiFi" : "Extended Connection (Tailscale)")
+                }
                 
                 if appState.isPlus {
                     if appState.adbConnecting {
@@ -57,6 +60,17 @@ struct ConnectionStatusPill: View {
                             ))
                     }
                 }
+                
+                // BLE Connection Icon
+                if bleManager.isAuthenticated {
+                    Image(systemName: "antenna.radiowaves.left.and.right")
+                        .contentTransition(.symbolEffect(.replace))
+                        .help("BLE Connected")
+                        .transition(.asymmetric(
+                            insertion: .scale.combined(with: .opacity),
+                            removal: .opacity
+                        ))
+                }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
@@ -67,6 +81,7 @@ struct ConnectionStatusPill: View {
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: appState.adbConnectionMode)
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: appState.isConnectedOverLocalNetwork)
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: QuickShareManager.shared.isRunning)
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: bleManager.connectionStatus)
         }
         .buttonStyle(.plain)
         .onHover { hovering in
@@ -101,7 +116,17 @@ struct ConnectionStatusPill: View {
 struct ConnectionPillPopover: View {
     @ObservedObject var appState = AppState.shared
     @ObservedObject var quickShareManager = QuickShareManager.shared
+    @ObservedObject var bleManager = BLECentralManager.shared
     @State private var currentIPAddress: String = "N/A"
+    
+    var bleStatusText: String {
+        switch bleManager.connectionStatus {
+        case .scanning: return "Scanning..."
+        case .connected: return "Authenticating..."
+        case .authenticated: return "Connected"
+        case .disconnected: return "Disconnected"
+        }
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -119,8 +144,8 @@ struct ConnectionPillPopover: View {
                     ConnectionInfoText(
                         label: "IP Address",
                         icon: "wifi",
-                        text: currentIPAddress,
-                        activeIp: appState.activeMacIp
+                        text: appState.device?.ipAddress == "BLE" ? "Not available (BLE only)" : currentIPAddress,
+                        activeIp: appState.device?.ipAddress == "BLE" ? nil : appState.activeMacIp
                     )
                     
                     if appState.isPlus && appState.adbConnected {
@@ -136,6 +161,15 @@ struct ConnectionPillPopover: View {
                         Spacer()
                         Toggle("", isOn: $quickShareManager.isEnabled)
                             .toggleStyle(.switch)
+                    }
+
+                    // BLE Status
+                    if appState.isBLEEnabled {
+                        ConnectionInfoText(
+                            label: "Bluetooth LE",
+                            icon: "point.3.connected.trianglepath.dotted",
+                            text: bleStatusText
+                        )
                     }
                 }
                 .padding(.bottom, 4)

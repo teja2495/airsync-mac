@@ -22,7 +22,7 @@ struct airsync_macApp: App {
     private let updaterController: SPUStandardUpdaterController
 
     // Initialize NowPlayingViewModel to start sending media info to Android
-    @StateObject private var macInfoSyncManager = MacInfoSyncManager()
+    @StateObject private var macInfoSyncManager = MacInfoSyncManager.shared
 
     init() {
 

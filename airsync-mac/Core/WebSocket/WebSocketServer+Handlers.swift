@@ -166,6 +166,17 @@ extension WebSocketServer {
                 }
             }
 
+            if let bleToken = dict["bleAuthToken"] as? String {
+                let oldToken = UserDefaults.standard.string(forKey: "bleAuthToken")
+                UserDefaults.standard.set(bleToken, forKey: "bleAuthToken")
+                print("[websocket] Received BLE auth token")
+                
+                // If token changed or was new, and BLE is enabled, we might want to reconnect
+                if oldToken != bleToken && AppState.shared.isBLEEnabled {
+                    BLECentralManager.shared.startScanning()
+                }
+            }
+
             if UserDefaults.standard.hasPairedDeviceOnce == false {
                 UserDefaults.standard.hasPairedDeviceOnce = true
             }
@@ -591,23 +602,33 @@ extension WebSocketServer {
         }
     }
 
-    private func handleMacMediaControlRequest(_ message: Message) {
+    func handleMacMediaControlRequest(_ message: Message) {
         if let dict = message.data.value as? [String: Any],
            let action = dict["action"] as? String {
-            handleMacMediaControl(action: action)
+            handleMediaControl(action: action)
         }
     }
 
-    private func handleMacMediaControl(action: String) {
+    func handleMediaControl(action: String) {
         switch action {
         case "play": NowPlayingCLI.shared.play()
         case "pause": NowPlayingCLI.shared.pause()
         case "previous": NowPlayingCLI.shared.previous()
         case "next": NowPlayingCLI.shared.next()
         case "stop": NowPlayingCLI.shared.stop()
+        case "playPause": NowPlayingCLI.shared.toggle()
         default: break
         }
         sendMacMediaControlResponse(action: action, success: true)
+    }
+    
+    func handleVolumeControl(action: String) {
+        switch action {
+        case "up", "vol_up": MacRemoteManager.shared.increaseVolume()
+        case "down", "vol_down": MacRemoteManager.shared.decreaseVolume()
+        case "mute", "vol_mute": MacRemoteManager.shared.toggleMute()
+        default: break
+        }
     }
 
     private func handleNotificationUpdate(_ message: Message) {

@@ -169,7 +169,7 @@ struct MediaSegmentView: View {
         if let status = appState.status {
             DeviceStatusView(showMediaToggle: true)
                 .background {
-                    let artwork = status.music.albumArt
+                    let artwork = status.music?.albumArt ?? ""
                     if !appState.isMusicCardHidden,
                        !artwork.isEmpty,
                        let data = Data(base64Encoded: artwork),

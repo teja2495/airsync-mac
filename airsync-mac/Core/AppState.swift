@@ -22,6 +22,7 @@ class AppState: ObservableObject {
     private var clipboardCancellable: AnyCancellable?
     private var lastClipboardValue: String? = nil
     private var shouldSkipSave = false
+    private var cancellables = Set<AnyCancellable>()
     private static let licenseDetailsKey = "licenseDetails"
 
     @Published var isOS26: Bool = true
@@ -96,6 +97,20 @@ class AppState: ObservableObject {
         )
         
         self.licenseDetails = AppState.loadLicenseDetailsFromUserDefaults()
+
+        self.isBLEEnabled = UserDefaults.standard.bool(forKey: "isBLEEnabled")
+        self.isBLEAutoConnectEnabled = UserDefaults.standard.object(forKey: "isBLEAutoConnectEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "isBLEAutoConnectEnabled")
+
+        if isBLEEnabled {
+            BLECentralManager.shared.startScanning()
+        }
+
+        BLECentralManager.shared.$connectionStatus
+            .receive(on: RunLoop.main)
+            .sink { [weak self] status in
+                self?.handleBLEStatusChange(status)
+            }
+            .store(in: &cancellables)
 
         if isClipboardSyncEnabled {
             startClipboardMonitoring()
@@ -190,7 +205,7 @@ class AppState: ObservableObject {
     @Published var isNativeMirroring: Bool = false
     
     var isConnectedOverLocalNetwork: Bool {
-        guard let ip = device?.ipAddress else { return true }
+        guard let ip = device?.ipAddress, ip != "BLE" else { return false }
         // Tailscale IPs usually start with 100.
         return !ip.hasPrefix("100.")
     }
@@ -292,6 +307,24 @@ class AppState: ObservableObject {
         didSet {
             UserDefaults.standard.set(hideDockIcon, forKey: "hideDockIcon")
             updateDockIconVisibility()
+        }
+    }
+
+    @Published var isBLEEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isBLEEnabled, forKey: "isBLEEnabled")
+            if isBLEEnabled {
+                BLECentralManager.shared.startScanning()
+            } else {
+                BLECentralManager.shared.stopScanning()
+                BLECentralManager.shared.disconnect()
+            }
+        }
+    }
+
+    @Published var isBLEAutoConnectEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(isBLEAutoConnectEnabled, forKey: "isBLEAutoConnectEnabled")
         }
     }
 
@@ -691,6 +724,9 @@ class AppState: ObservableObject {
             self.status = nil
             self.currentDeviceWallpaperBase64 = nil
             
+            // Disconnect BLE
+            BLECentralManager.shared.disconnect()
+            
             // Clean up Quick Share state
             if QuickShareManager.shared.transferState != .idle {
                 QuickShareManager.shared.transferState = .idle
@@ -952,6 +988,9 @@ class AppState: ObservableObject {
     }
     """
         WebSocketServer.shared.sendClipboardUpdate(message)
+        
+        // Also send via BLE
+        BLETransportBridge.shared.sendClipboard(text)
     }
 
     func updateClipboardFromAndroid(_ text: String) {
@@ -1181,6 +1220,33 @@ class AppState: ObservableObject {
                 NSApp.setActivationPolicy(.regular)
             }
         }
+    }
+
+    private func handleBLEStatusChange(_ status: BLECentralManager.BLEConnectionStatus) {
+        if status == .authenticated {
+            if self.device == nil {
+                updateVirtualDeviceForBLE()
+            }
+        } else if status == .disconnected {
+            // Only clear device if it's the virtual BLE device
+            if self.device?.ipAddress == "BLE" {
+                self.device = nil
+                self.status = nil
+                self.notifications = []
+            }
+        }
+    }
+
+    private func updateVirtualDeviceForBLE() {
+        let name = BLECentralManager.shared.connectedDeviceName ?? "Android Device"
+        self.device = Device(
+            name: name,
+            ipAddress: "BLE",
+            port: 0,
+            version: "2.0.0",
+            adbPorts: []
+        )
+        print("[state] (BLE) Created virtual device: \(name)")
     }
 
     /// Revalidates the current network adapter selection and falls back to auto if no longer valid

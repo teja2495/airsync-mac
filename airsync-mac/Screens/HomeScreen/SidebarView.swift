@@ -25,6 +25,7 @@ struct SidebarView: View {
             .padding(8)
 
             if let deviceVersion = appState.device?.version,
+               appState.device?.ipAddress != "BLE",
                isVersion(deviceVersion, lessThan: appState.minAndroidVersion) {
                 Label("Your Android app is outdated", systemImage: "iphone.badge.exclamationmark")
                     .padding(4)

@@ -34,11 +34,11 @@ struct MediaPlayerView: View {
                 Group {
                     if AppState.shared.isPlus && AppState.shared.licenseCheck {
                         HStack{
-                            if (AppState.shared.status?.music.likeStatus == "liked" || AppState.shared.status?.music.likeStatus == "not_liked") {
+                            if (AppState.shared.status?.music?.likeStatus == "liked" || AppState.shared.status?.music?.likeStatus == "not_liked") {
                                 GlassButtonView(
                                     label: "",
                                     systemImage: {
-                                        if let like = AppState.shared.status?.music.likeStatus {
+                                        if let like = AppState.shared.status?.music?.likeStatus {
                                             switch like {
                                             case "liked": return "heart.fill"
                                             case "not_liked": return "heart"
@@ -49,7 +49,7 @@ struct MediaPlayerView: View {
                                     }(),
                                     iconOnly: true,
                                     action: {
-                                        guard let like = AppState.shared.status?.music.likeStatus else { return }
+                                        guard let like = AppState.shared.status?.music?.likeStatus else { return }
                                         if like == "liked" {
                                             WebSocketServer.shared.unlike()
                                         } else if like == "not_liked" {
