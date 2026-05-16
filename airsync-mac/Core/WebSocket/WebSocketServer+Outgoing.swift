@@ -6,6 +6,7 @@
 import Foundation
 import Swifter
 import CryptoKit
+import AppKit
 
 extension WebSocketServer {
     
@@ -97,6 +98,7 @@ extension WebSocketServer {
                 let volume = music["volume"] as? Int ?? 0
                 let isMuted = music["isMuted"] as? Bool ?? false
                 let likeStatus = music["likeStatus"] as? String ?? "none"
+                let albumArt = music["albumArtLite"] as? String ?? "" // Use lite version for BLE
                 
                 let payload = [
                     isPlaying ? "1" : "0",
@@ -104,7 +106,8 @@ extension WebSocketServer {
                     artist,
                     String(volume),
                     isMuted ? "1" : "0",
-                    likeStatus
+                    likeStatus,
+                    albumArt
                 ].joined(separator: BLEConstants.delimiter)
                 
                 BLECentralManager.shared.writeChunked(characteristicUUID: BLEConstants.charMacMediaState, payload: payload)
@@ -248,6 +251,22 @@ extension WebSocketServer {
             
             if let art = albumArtBase64 {
                 musicDict["albumArt"] = art
+            }
+
+            // Create lite version for BLE (scaled down and compressed)
+            if let artworkData = musicInfo.artworkData, let image = NSImage(data: artworkData) {
+                let size = NSSize(width: 80, height: 80)
+                let frame = NSRect(x: 0, y: 0, width: size.width, height: size.height)
+                if let representation = image.bestRepresentation(for: frame, context: nil, hints: nil) {
+                    let resizedImage = NSImage(size: size, flipped: false, drawingHandler: { (_) -> Bool in
+                        return representation.draw(in: frame)
+                    })
+                    if let tiff = resizedImage.tiffRepresentation,
+                       let bitmap = NSBitmapImageRep(data: tiff),
+                       let jpegData = bitmap.representation(using: .jpeg, properties: [.compressionFactor: 0.3]) {
+                        musicDict["albumArtLite"] = jpegData.base64EncodedString()
+                    }
+                }
             }
             
             statusDict["music"] = musicDict
