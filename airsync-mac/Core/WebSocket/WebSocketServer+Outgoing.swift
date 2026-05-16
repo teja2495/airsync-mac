@@ -86,7 +86,7 @@ extension WebSocketServer {
             if let battery = data["battery"] as? [String: Any],
                let level = battery["level"] as? Int,
                let charging = battery["isCharging"] as? Bool {
-                let payload = "\(level)|\(charging ? "1" : "0")"
+                let payload = [String(level), charging ? "1" : "0"].joined(separator: BLEConstants.delimiter)
                 BLECentralManager.shared.write(characteristicUUID: BLEConstants.charMacBattery, data: payload.data(using: .utf8)!)
             }
             // For media status
@@ -98,7 +98,15 @@ extension WebSocketServer {
                 let isMuted = music["isMuted"] as? Bool ?? false
                 let likeStatus = music["likeStatus"] as? String ?? "none"
                 
-                let payload = "\(isPlaying ? "1" : "0")|\(title)|\(artist)|\(volume)|\(isMuted ? "1" : "0")|\(likeStatus)"
+                let payload = [
+                    isPlaying ? "1" : "0",
+                    title,
+                    artist,
+                    String(volume),
+                    isMuted ? "1" : "0",
+                    likeStatus
+                ].joined(separator: BLEConstants.delimiter)
+                
                 BLECentralManager.shared.writeChunked(characteristicUUID: BLEConstants.charMacMediaState, payload: payload)
             }
         case "disconnectRequest":
@@ -246,17 +254,6 @@ extension WebSocketServer {
         }
 
         sendMessage(type: "status", data: statusDict)
-        
-        // Also relay battery and media state over BLE
-        if BLECentralManager.shared.isAuthenticated {
-            let batteryPayload = "\(batteryLevel)|\(isCharging ? "1" : "0")"
-            if let data = batteryPayload.data(using: .utf8) {
-                BLECentralManager.shared.write(characteristicUUID: BLEConstants.charMacBattery, data: data)
-            }
-            if let musicInfo {
-                BLETransportBridge.shared.sendMacMediaState(info: musicInfo)
-            }
-        }
     }
 
     // MARK: - Call Control
