@@ -82,15 +82,29 @@ class BLETransportBridge {
     }
     
     private func handleNotification(_ components: [String]) {
-        guard components.count >= 3 else { return }
-        let pkg = components[0]
-        let title = components[1]
-        let text = components[2]
+        let pkg: String
+        let appName: String
+        let title: String
+        let text: String
+        
+        if components.count >= 4 {
+            pkg = components[0]
+            appName = components[1]
+            title = components[2]
+            text = components[3]
+        } else if components.count >= 3 {
+            pkg = components[0]
+            appName = pkg // Fallback to package name
+            title = components[1]
+            text = components[2]
+        } else {
+            return
+        }
         
         let notif = Notification(
             title: title,
             body: text,
-            app: pkg,
+            app: appName,
             nid: UUID().uuidString,
             package: pkg,
             priority: "",
