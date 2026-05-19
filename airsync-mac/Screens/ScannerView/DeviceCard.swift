@@ -40,7 +40,6 @@ struct DeviceCard: View {
                         HStack(spacing: 8) {
                             if device.type == "ble" {
                                 Image("logo.bluetooth")
-                                    .foregroundColor(.accentColor)
                                 Text("Nearby")
                                     .font(.caption)
                                     .foregroundColor(.secondary)

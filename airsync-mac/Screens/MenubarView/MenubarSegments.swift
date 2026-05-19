@@ -190,10 +190,14 @@ struct MediaSegmentView: View {
 
 struct DiscoverySegmentView: View {
     @ObservedObject var appState = AppState.shared
-    @StateObject private var udpDiscovery = UDPDiscoveryManager.shared
+    @ObservedObject private var udpDiscovery = UDPDiscoveryManager.shared
+    @ObservedObject private var bleManager = BLECentralManager.shared
 
     var body: some View {
-        if appState.device == nil && !udpDiscovery.discoveredDevices.isEmpty {
+        let hasUdp = !udpDiscovery.discoveredDevices.isEmpty
+        let hasBle = appState.isBLEEnabled && !bleManager.discoveredBLEDevices.isEmpty
+        
+        if appState.device == nil && (hasUdp || hasBle) {
             MenubarDeviceDiscoveryView()
                 .padding(10)
                 .segmentStyle()
