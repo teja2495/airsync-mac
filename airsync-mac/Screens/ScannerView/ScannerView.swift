@@ -77,6 +77,7 @@ struct ScannerView: View {
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
+                    .transition(.opacity.combined(with: .scale))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     HStack {
@@ -86,32 +87,89 @@ struct ScannerView: View {
                             .foregroundColor(.secondary)
                         Spacer()
                     }
+                    .transition(.opacity)
 
-                    ScrollView {
-                        LazyVStack(spacing: 12) {
-                            ForEach(allDiscoveredDevices) { device in
-                                let lastConnected = quickConnectManager.getLastConnectedDevice()
+                    let devices = Array(allDiscoveredDevices.prefix(4))
+                    let lastConnected = quickConnectManager.getLastConnectedDevice()
+                    
+                    VStack {
+                        Spacer()
+                        if devices.count == 1 {
+                            HStack {
+                                Spacer()
                                 DeviceCard(
-                                    device: device,
-                                    isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, device.name),
+                                    device: devices[0],
+                                    isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, devices[0].name),
                                     connectAction: {
-                                        if device.type == "ble" {
-                                            bleManager.connectManually(toUuid: device.deviceId)
+                                        if devices[0].type == "ble" {
+                                            bleManager.connectManually(toUuid: devices[0].deviceId)
                                         } else {
-                                            quickConnectManager.connect(to: device)
+                                            quickConnectManager.connect(to: devices[0])
                                         }
                                     },
                                     namespace: animation
                                 )
-                                .transition(.scale.combined(with: .opacity))
+                                .transition(.opacity.combined(with: .scale))
+                                Spacer()
+                            }
+                        } else if devices.count == 2 {
+                            HStack(spacing: 20) {
+                                Spacer()
+                                ForEach(devices) { device in
+                                    DeviceCard(
+                                        device: device,
+                                        isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, device.name),
+                                        connectAction: {
+                                            if device.type == "ble" {
+                                                bleManager.connectManually(toUuid: device.deviceId)
+                                            } else {
+                                                quickConnectManager.connect(to: device)
+                                            }
+                                        },
+                                        namespace: animation
+                                    )
+                                    .transition(.opacity.combined(with: .scale))
+                                }
+                                Spacer()
+                            }
+                        } else {
+                            let rows = 2
+                            let columns = 2
+                            VStack(spacing: 20) {
+                                ForEach(0..<rows, id: \.self) { rowIndex in
+                                    HStack(spacing: 20) {
+                                        Spacer()
+                                        ForEach(0..<columns, id: \.self) { columnIndex in
+                                            let index = rowIndex * columns + columnIndex
+                                            if index < devices.count {
+                                                let device = devices[index]
+                                                DeviceCard(
+                                                    device: device,
+                                                    isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, device.name),
+                                                    connectAction: {
+                                                        if device.type == "ble" {
+                                                            bleManager.connectManually(toUuid: device.deviceId)
+                                                        } else {
+                                                            quickConnectManager.connect(to: device)
+                                                        }
+                                                    },
+                                                    namespace: animation
+                                                )
+                                                .transition(.opacity.combined(with: .scale))
+                                            }
+                                        }
+                                        Spacer()
+                                    }
+                                }
                             }
                         }
-                        .padding(.vertical, 8)
+                        Spacer()
                     }
-                    .scrollClipDisabled()
-                    .frame(maxHeight: .infinity)
+                    .transition(.opacity.combined(with: .scale))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: allDiscoveredDevices)
             .padding(.horizontal, 24)
             
             Spacer()
