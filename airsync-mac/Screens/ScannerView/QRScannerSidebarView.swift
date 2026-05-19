@@ -26,6 +26,8 @@ struct QRScannerSidebarView: View {
         }
     }
     
+    @State private var showingSettingsPopover = false
+    
     var body: some View {
         let info = statusInfo(for: appState.webSocketStatus)
         
@@ -136,15 +138,27 @@ struct QRScannerSidebarView: View {
 
             Spacer()
 
-            Label {
-                Text(info.text)
-                    .foregroundColor(info.color)
-            } icon: {
-                Image(systemName: info.icon)
-                    .foregroundColor(info.color)
+            HStack {
+                GlassButtonView(
+                    label: info.text,
+                    systemImage: info.icon,
+                    action: {}
+                )
+                .foregroundStyle(info.color)
+                .focusable(false)
+
+
+                GlassButtonView(
+                    label: "",
+                    systemImage: "gearshape",
+                    iconOnly: true,
+                    action: {showingSettingsPopover.toggle()}
+                )
+                .popover(isPresented: $showingSettingsPopover, arrowEdge: .top) {
+                    ConnectionPillPopover()
+                }
+                .focusable(false)
             }
-            .padding(6)
-            .glassBoxIfAvailable(radius: 20)
             .padding(.bottom, 16)
         }
         .padding(.horizontal, 8)

@@ -66,30 +66,6 @@ struct ScannerView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            // BLE Settings Toggles Section
-            HStack(spacing: 24) {
-                HStack(spacing: 6) {
-                    Image("logo.bluetooth")
-                        .foregroundColor(.accentColor)
-                    Toggle("BLE", isOn: $appState.isBLEEnabled)
-                        .toggleStyle(.switch)
-                        .controlSize(.small)
-                }
-                
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.triangle.2.circlepath")
-                        .foregroundColor(.accentColor)
-                    Toggle("Auto-connect", isOn: $appState.isBLEAutoConnectEnabled)
-                        .toggleStyle(.switch)
-                        .controlSize(.small)
-                        .disabled(!appState.isBLEEnabled)
-                }
-            }
-            .padding()
-            .glassBoxIfAvailable(radius: 24)
-            .padding(.horizontal, 24)
-            .padding(.top, 24)
-            
             // Available Devices Section (UDP and BLE Discovery)
             VStack(spacing: 12) {
                 

@@ -226,8 +226,28 @@ struct ConnectionPillPopover: View {
                     .focusable(false)
                 }
             } else {
-                Text("No device connected")
-                    .foregroundColor(.secondary)
+            VStack(alignment: .leading, spacing: 8) {
+                
+                HStack {
+                    Label("Bluetooth LE Discovery", image: "logo.bluetooth")
+                        .font(.system(size: 12))
+                    Spacer()
+                    Toggle("", isOn: $appState.isBLEEnabled)
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
+                }
+                
+                HStack {
+                    Label("Auto-connect", systemImage: "arrow.triangle.2.circlepath")
+                        .font(.system(size: 12))
+                    Spacer()
+                    Toggle("", isOn: $appState.isBLEAutoConnectEnabled)
+                        .toggleStyle(.switch)
+                        .controlSize(.small)
+                        .disabled(!appState.isBLEEnabled)
+                }
+            }
+            .frame(width: 240)
             }
         }
         .padding()
