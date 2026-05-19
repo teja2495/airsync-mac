@@ -37,6 +37,8 @@ struct QRScannerSidebarView: View {
             .padding(.horizontal, 16)
             .padding(.top, 16)
 
+            Spacer()
+
             
             if !qrManager.hasValidIP {
                 VStack {
@@ -72,7 +74,7 @@ struct QRScannerSidebarView: View {
                         qrManager.authenticateUser()
                     }
                 } else {
-                    // Unlocked UI: Plain raw content with NO container/background
+                    // Unlocked
                     if let qrImage = qrManager.qrImage {
                         VStack(spacing: 12) {
                             Image(decorative: qrImage, scale: 1.0)
@@ -143,7 +145,7 @@ struct QRScannerSidebarView: View {
             }
             .padding(6)
             .glassBoxIfAvailable(radius: 20)
-            .padding(.bottom, 12)
+            .padding(.bottom, 16)
         }
         .padding(.horizontal, 8)
         .onAppear {

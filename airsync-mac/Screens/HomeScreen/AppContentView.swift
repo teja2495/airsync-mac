@@ -20,7 +20,7 @@ struct AppContentView: View {
             if appState.device == nil {
                 ScannerView()
                     .tabItem {
-                        Image(systemName: "qrcode")
+                        Image(systemName: "iphone.motion")
                         //                    Label("Scan", systemImage: "qrcode")
                     }
                     .tag(TabIdentifier.qr)
