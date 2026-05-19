@@ -16,6 +16,7 @@ class BLECentralManager: NSObject, ObservableObject {
     @Published var connectionStatus: BLEConnectionStatus = .disconnected
     @Published var connectedDeviceName: String? = nil
     @Published var discoveredPeripherals: [String: CBPeripheral] = [:]
+    @Published var connectingDeviceUUID: String? = nil
     
     var isConnected: Bool {
         connectionStatus != .disconnected && connectionStatus != .scanning
@@ -77,6 +78,7 @@ class BLECentralManager: NSObject, ObservableObject {
             centralManager.cancelPeripheralConnection(peripheral)
         }
         connectionStatus = .disconnected
+        connectingDeviceUUID = nil
         discoveredPeripherals.removeAll()
     }
     
@@ -116,6 +118,7 @@ class BLECentralManager: NSObject, ObservableObject {
         scanTimer?.invalidate()
         scanTimer = nil
         
+        connectingDeviceUUID = uuidStr
         connectionStatus = .scanning
         centralManager.connect(peripheral, options: [
             CBConnectPeripheralOptionNotifyOnDisconnectionKey: true
@@ -129,6 +132,7 @@ class BLECentralManager: NSObject, ObservableObject {
                 self.centralManager.cancelPeripheralConnection(p)
             }
             self.discoveredPeripheral = nil
+            self.connectingDeviceUUID = nil
             self.connectionStatus = .disconnected
             self.characteristics.removeAll()
             self.discoveredServiceCount = 0
@@ -206,6 +210,7 @@ extension BLECentralManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
         connectionTimer?.invalidate()
         connectionTimer = nil
+        connectingDeviceUUID = nil
         let name = peripheral.name ?? "Unknown Device"
         let maxWrite = peripheral.maximumWriteValueLength(for: .withoutResponse)
         print("[BLE] Connected to \(name), Max Write Length: \(maxWrite)")
@@ -219,6 +224,7 @@ extension BLECentralManager: CBCentralManagerDelegate {
     func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
         connectionTimer?.invalidate()
         connectionTimer = nil
+        connectingDeviceUUID = nil
         print("[BLE] Failed to connect: \(error?.localizedDescription ?? "Unknown error")")
         connectionStatus = .disconnected
         discoveredPeripheral = nil
@@ -241,6 +247,7 @@ extension BLECentralManager: CBCentralManagerDelegate {
         
         print("[BLE] Disconnected: \(error?.localizedDescription ?? "clean")")
         connectionStatus = .disconnected
+        connectingDeviceUUID = nil
         discoveredPeripheral = nil
         connectedDeviceName = nil
         characteristics.removeAll()

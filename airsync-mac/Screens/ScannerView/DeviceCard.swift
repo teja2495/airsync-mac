@@ -3,7 +3,6 @@ import SwiftUI
 struct DeviceCard: View {
     let device: DiscoveredDevice
     let isLastConnected: Bool
-    let isCompact: Bool
     let connectAction: () -> Void
     let namespace: Namespace.ID?
 
@@ -13,82 +12,14 @@ struct DeviceCard: View {
 
     private var isLoading: Bool {
         if device.type == "ble" {
-            return bleManager.connectionStatus == .scanning
+            return bleManager.connectingDeviceUUID == device.deviceId
         }
         return quickConnectManager.connectingDeviceID == device.id
     }
 
     var body: some View {
         Group {
-            if isCompact {
-                // Compact Mode
-                Button(action: connectAction) {
-                    HStack(spacing: 8) {
-                        ZStack {
-                            if isLoading {
-                                ProgressView()
-                                    .controlSize(.small)
-                                    .frame(width: 16, height: 16)
-                            }
-                            
-                            Image(systemName: "iphone")
-                                .font(.system(size: 16))
-                                .ifLet(namespace) { view, ns in
-                                    view.matchedGeometryEffect(id: "icon-\(device.id)", in: ns)
-                                }
-                                .opacity(isLoading ? 0 : 1)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 0) {
-                            Text(device.name)
-                                .font(.system(size: 12, weight: .semibold))
-                                .lineLimit(1)
-                                .ifLet(namespace) { view, ns in
-                                    view.matchedGeometryEffect(id: "name-\(device.id)", in: ns)
-                                }
-                        }
-                        
-                        if !device.isActive {
-                            Image(systemName: "clock")
-                                .foregroundColor(.secondary)
-                                .transition(.opacity.combined(with: .scale(scale: 0.9)))
-                        }
-                        
-                        HStack(spacing: 4) {
-                            if device.type == "ble" {
-                                Image("logo.bluetooth")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.accentColor)
-                            }
-                            if device.ips.contains(where: { !$0.hasPrefix("100.") }) {
-                                Image(systemName: "wifi")
-                                    .font(.system(size: 10))
-                            }
-                            if device.ips.contains(where: { $0.hasPrefix("100.") }) {
-                                Image(systemName: "globe")
-                                    .font(.system(size: 10))
-                            }
-                        }
-                        .foregroundColor(.secondary)
-                        
-                        if isLastConnected && device.isActive {
-                            Image(systemName: "clock.arrow.circlepath")
-                                .font(.caption2)
-                                .foregroundColor(.accentColor)
-                                .ifLet(namespace) { view, ns in
-                                    view.matchedGeometryEffect(id: "status-\(device.id)", in: ns)
-                                }
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .glassBoxIfAvailable(radius: 20)
-                    .opacity(device.isActive ? 1.0 : 0.7)
-                    .grayscale(device.isActive ? 0 : 0.4)
-                }
-                .buttonStyle(.plain)
-            } else {
-                // Expanded Mode
+            
                 VStack(spacing: 8) {
                     Image(systemName: "iphone")
                         .font(.system(size: 50))
@@ -110,19 +41,22 @@ struct DeviceCard: View {
                             if device.type == "ble" {
                                 Image("logo.bluetooth")
                                     .foregroundColor(.accentColor)
-                                Text("Bluetooth LE")
+                                Text("Nearby")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             } else {
-                                if device.ips.contains(where: { !$0.hasPrefix("100.") }) {
+                                if device.ips.contains("Bluetooth LE") || device.ips.contains("Nearby") {
+                                    Image("logo.bluetooth")
+                                }
+                                if device.ips.contains(where: { $0 != "Bluetooth LE" && $0 != "Nearby" && !$0.hasPrefix("100.") }) {
                                         Image(systemName: "wifi")
                                 }
-                                if device.ips.contains(where: { $0.hasPrefix("100.") }) {
+                                if device.ips.contains(where: { $0 != "Bluetooth LE" && $0 != "Nearby" && $0.hasPrefix("100.") }) {
                                         Image(systemName: "globe")
                                 }
 
-                                // Show primary IP
-                                let displayIP = device.ips.first(where: { !$0.hasPrefix("100.") }) ?? device.ips.first ?? ""
+                                // Show primary IP excluding Bluetooth LE and Nearby
+                                let displayIP = device.ips.first(where: { $0 != "Bluetooth LE" && $0 != "Nearby" && !$0.hasPrefix("100.") }) ?? device.ips.first(where: { $0 != "Bluetooth LE" && $0 != "Nearby" }) ?? ""
                                 Text(displayIP)
                                     .font(.caption)
                                     .foregroundColor(.secondary)
@@ -186,7 +120,6 @@ struct DeviceCard: View {
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
                 )
-            }
         }
         .onAppear {
             loadWallpaper()

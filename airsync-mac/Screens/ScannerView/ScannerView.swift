@@ -14,20 +14,54 @@ struct ScannerView: View {
     @ObservedObject private var bleManager = BLECentralManager.shared
     @Namespace private var animation
 
+    static func cleanDeviceName(_ name: String) -> String {
+        return name
+            .replacingOccurrences(of: "AirSync-AirSync-", with: "")
+            .replacingOccurrences(of: "AirSync-", with: "")
+            .replacingOccurrences(of: "airsync-", with: "")
+            .replacingOccurrences(of: "airsync", with: "")
+            .replacingOccurrences(of: "-", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    static func namesAreSimilar(_ name1: String, _ name2: String) -> Bool {
+        let clean1 = cleanDeviceName(name1).lowercased()
+        let clean2 = cleanDeviceName(name2).lowercased()
+        return clean1.contains(clean2) || clean2.contains(clean1) || clean1 == clean2
+    }
+
     private var allDiscoveredDevices: [DiscoveredDevice] {
-        var devices = udpDiscovery.discoveredDevices
+        var mergedDevices: [DiscoveredDevice] = []
         
-        // Only include BLE devices if BLE is enabled
+        // Start with UDP (Wi-Fi/Network) discovered devices
+        for udpDevice in udpDiscovery.discoveredDevices {
+            mergedDevices.append(udpDevice)
+        }
+        
+        // If BLE is enabled, merge or append BLE devices
         if appState.isBLEEnabled {
             let bleDevices = bleManager.discoveredBLEDevices
             for bleDevice in bleDevices {
-                if !devices.contains(where: { $0.name == bleDevice.name }) {
-                    devices.append(bleDevice)
+                if let index = mergedDevices.firstIndex(where: { ScannerView.namesAreSimilar($0.name, bleDevice.name) }) {
+                    var matchedDevice = mergedDevices[index]
+                    matchedDevice.ips.insert("Bluetooth LE")
+                    mergedDevices[index] = matchedDevice
+                } else {
+                    let cleanedName = ScannerView.cleanDeviceName(bleDevice.name)
+                    let cleanedBLEDevice = DiscoveredDevice(
+                        deviceId: bleDevice.deviceId,
+                        name: cleanedName,
+                        ips: bleDevice.ips,
+                        port: bleDevice.port,
+                        type: bleDevice.type,
+                        lastSeen: bleDevice.lastSeen
+                    )
+                    mergedDevices.append(cleanedBLEDevice)
                 }
             }
         }
         
-        return devices
+        return mergedDevices
     }
 
     var body: some View {
@@ -83,8 +117,7 @@ struct ScannerView: View {
                                 let lastConnected = quickConnectManager.getLastConnectedDevice()
                                 DeviceCard(
                                     device: device,
-                                    isLastConnected: lastConnected?.name == device.name && (lastConnected != nil && device.ips.contains(lastConnected!.ipAddress)),
-                                    isCompact: false, // Expanded mode always!
+                                    isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, device.name),
                                     connectAction: {
                                         if device.type == "ble" {
                                             bleManager.connectManually(toUuid: device.deviceId)

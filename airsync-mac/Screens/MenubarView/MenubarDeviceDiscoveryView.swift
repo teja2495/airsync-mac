@@ -26,8 +26,7 @@ struct MenubarDeviceDiscoveryView: View {
                         ForEach(devices) { device in
                             DeviceCard(
                                 device: device,
-                                isLastConnected: lastConnected?.name == device.name && (lastConnected != nil && device.ips.contains(lastConnected!.ipAddress)),
-                                isCompact: true,
+                                isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, device.name),
                                 connectAction: {
                                     quickConnectManager.connect(to: device)
                                 },
