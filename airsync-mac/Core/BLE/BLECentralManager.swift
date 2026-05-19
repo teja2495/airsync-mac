@@ -15,6 +15,7 @@ class BLECentralManager: NSObject, ObservableObject {
     
     @Published var connectionStatus: BLEConnectionStatus = .disconnected
     @Published var connectedDeviceName: String? = nil
+    @Published var discoveredPeripherals: [String: CBPeripheral] = [:]
     
     var isConnected: Bool {
         connectionStatus != .disconnected && connectionStatus != .scanning
@@ -76,6 +77,7 @@ class BLECentralManager: NSObject, ObservableObject {
             centralManager.cancelPeripheralConnection(peripheral)
         }
         connectionStatus = .disconnected
+        discoveredPeripherals.removeAll()
     }
     
     func write(characteristicUUID: CBUUID, data: Data) {
@@ -89,6 +91,47 @@ class BLECentralManager: NSObject, ObservableObject {
         let chunks = BLEChunkUtil.splitIntoChunks(payload: payload, mtu: mtu)
         for chunk in chunks {
             write(characteristicUUID: characteristicUUID, data: chunk)
+        }
+    }
+    
+    var discoveredBLEDevices: [DiscoveredDevice] {
+        discoveredPeripherals.values.map { peripheral in
+            DiscoveredDevice(
+                deviceId: peripheral.identifier.uuidString,
+                name: peripheral.name ?? "Android Device",
+                ips: ["Bluetooth LE"],
+                port: 0,
+                type: "ble",
+                lastSeen: Date()
+            )
+        }
+    }
+    
+    func connectManually(toUuid uuidStr: String) {
+        guard let peripheral = discoveredPeripherals[uuidStr] else { return }
+        print("[BLE] Manual connection requested for \(peripheral.name ?? "Unknown")")
+        
+        discoveredPeripheral = peripheral
+        centralManager.stopScan()
+        scanTimer?.invalidate()
+        scanTimer = nil
+        
+        connectionStatus = .scanning
+        centralManager.connect(peripheral, options: [
+            CBConnectPeripheralOptionNotifyOnDisconnectionKey: true
+        ])
+        
+        connectionTimer?.invalidate()
+        connectionTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
+            guard let self = self else { return }
+            print("[BLE] Manual connection timed out, cancelling...")
+            if let p = self.discoveredPeripheral {
+                self.centralManager.cancelPeripheralConnection(p)
+            }
+            self.discoveredPeripheral = nil
+            self.connectionStatus = .disconnected
+            self.characteristics.removeAll()
+            self.discoveredServiceCount = 0
         }
     }
     
@@ -121,34 +164,40 @@ extension BLECentralManager: CBCentralManagerDelegate {
         let serviceUUIDs = advertisementData[CBAdvertisementDataServiceUUIDsKey] as? [CBUUID] ?? []
         print("[BLE] Discovered \(name) with RSSI: \(RSSI), Services: \(serviceUUIDs.map { $0.uuidString }.joined(separator: ", "))")
         
-        // Always connect if discovered while scanning
-        discoveredPeripheral = peripheral
-        // connectedDeviceName = name // Move this to auth success
-        centralManager.stopScan()
-        scanTimer?.invalidate()
-        scanTimer = nil
+        let uuidStr = peripheral.identifier.uuidString
+        DispatchQueue.main.async {
+            self.discoveredPeripherals[uuidStr] = peripheral
+        }
         
-        print("[BLE] Attempting to connect to \(name)...")
-        centralManager.connect(peripheral, options: [
-            CBConnectPeripheralOptionNotifyOnDisconnectionKey: true
-        ])
-        
-        // CoreBluetooth connect() has no timeout — it can hang forever with stale pairing data.
-        connectionTimer?.invalidate()
-        connectionTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
-            guard let self = self else { return }
-            print("[BLE] Connection timed out, cancelling and retrying...")
-            if let p = self.discoveredPeripheral {
-                self.centralManager.cancelPeripheralConnection(p)
-            }
-            self.discoveredPeripheral = nil
-            self.connectionStatus = .disconnected
-            self.characteristics.removeAll()
-            self.discoveredServiceCount = 0
+        // Auto connect if enabled
+        if AppState.shared.isBLEAutoConnectEnabled {
+            discoveredPeripheral = peripheral
+            centralManager.stopScan()
+            scanTimer?.invalidate()
+            scanTimer = nil
             
-            if AppState.shared.isBLEAutoConnectEnabled {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                    self.startScanning()
+            print("[BLE] Attempting auto-connect to \(name)...")
+            centralManager.connect(peripheral, options: [
+                CBConnectPeripheralOptionNotifyOnDisconnectionKey: true
+            ])
+            
+            // CoreBluetooth connect() has no timeout — it can hang forever with stale pairing data.
+            connectionTimer?.invalidate()
+            connectionTimer = Timer.scheduledTimer(withTimeInterval: 10.0, repeats: false) { [weak self] _ in
+                guard let self = self else { return }
+                print("[BLE] Connection timed out, cancelling and retrying...")
+                if let p = self.discoveredPeripheral {
+                    self.centralManager.cancelPeripheralConnection(p)
+                }
+                self.discoveredPeripheral = nil
+                self.connectionStatus = .disconnected
+                self.characteristics.removeAll()
+                self.discoveredServiceCount = 0
+                
+                if AppState.shared.isBLEAutoConnectEnabled {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        self.startScanning()
+                    }
                 }
             }
         }

@@ -9,9 +9,13 @@ struct DeviceCard: View {
 
     @State private var wallpaperImage: NSImage?
     @ObservedObject private var quickConnectManager = QuickConnectManager.shared
+    @ObservedObject private var bleManager = BLECentralManager.shared
 
     private var isLoading: Bool {
-        quickConnectManager.connectingDeviceID == device.id
+        if device.type == "ble" {
+            return bleManager.connectionStatus == .scanning
+        }
+        return quickConnectManager.connectingDeviceID == device.id
     }
 
     var body: some View {
@@ -51,6 +55,11 @@ struct DeviceCard: View {
                         }
                         
                         HStack(spacing: 4) {
+                            if device.type == "ble" {
+                                Image("logo.bluetooth")
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.accentColor)
+                            }
                             if device.ips.contains(where: { !$0.hasPrefix("100.") }) {
                                 Image(systemName: "wifi")
                                     .font(.system(size: 10))
@@ -98,20 +107,27 @@ struct DeviceCard: View {
                             }
                         
                         HStack(spacing: 8) {
-                            if device.ips.contains(where: { !$0.hasPrefix("100.") }) {
-                                    Image(systemName: "wifi")
-                            }
-                            if device.ips.contains(where: { $0.hasPrefix("100.") }) {
-                                    Image(systemName: "globe")
-                            }
+                            if device.type == "ble" {
+                                Image("logo.bluetooth")
+                                    .foregroundColor(.accentColor)
+                                Text("Bluetooth LE")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            } else {
+                                if device.ips.contains(where: { !$0.hasPrefix("100.") }) {
+                                        Image(systemName: "wifi")
+                                }
+                                if device.ips.contains(where: { $0.hasPrefix("100.") }) {
+                                        Image(systemName: "globe")
+                                }
 
-
-                            // Show primary IP
-                            let displayIP = device.ips.first(where: { !$0.hasPrefix("100.") }) ?? device.ips.first ?? ""
-                            Text(displayIP)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .transition(.opacity)
+                                // Show primary IP
+                                let displayIP = device.ips.first(where: { !$0.hasPrefix("100.") }) ?? device.ips.first ?? ""
+                                Text(displayIP)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                    .transition(.opacity)
+                            }
                         }
                         .font(.caption2)
                         .foregroundColor(.secondary)

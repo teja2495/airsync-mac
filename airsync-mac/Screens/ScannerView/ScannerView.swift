@@ -11,7 +11,24 @@ struct ScannerView: View {
     @ObservedObject var appState = AppState.shared
     @ObservedObject private var quickConnectManager = QuickConnectManager.shared
     @ObservedObject private var udpDiscovery = UDPDiscoveryManager.shared
+    @ObservedObject private var bleManager = BLECentralManager.shared
     @Namespace private var animation
+
+    private var allDiscoveredDevices: [DiscoveredDevice] {
+        var devices = udpDiscovery.discoveredDevices
+        
+        // Only include BLE devices if BLE is enabled
+        if appState.isBLEEnabled {
+            let bleDevices = bleManager.discoveredBLEDevices
+            for bleDevice in bleDevices {
+                if !devices.contains(where: { $0.name == bleDevice.name }) {
+                    devices.append(bleDevice)
+                }
+            }
+        }
+        
+        return devices
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -39,10 +56,10 @@ struct ScannerView: View {
             .padding(.horizontal, 24)
             .padding(.top, 24)
             
-            // Available Devices Section (UDP Discovery)
+            // Available Devices Section (UDP and BLE Discovery)
             VStack(spacing: 12) {
                 
-                if udpDiscovery.discoveredDevices.isEmpty {
+                if allDiscoveredDevices.isEmpty {
                     VStack(spacing: 12) {
                         ProgressView()
                             .controlSize(.small)
@@ -62,14 +79,18 @@ struct ScannerView: View {
 
                     ScrollView {
                         LazyVStack(spacing: 12) {
-                            ForEach(udpDiscovery.discoveredDevices) { device in
+                            ForEach(allDiscoveredDevices) { device in
                                 let lastConnected = quickConnectManager.getLastConnectedDevice()
                                 DeviceCard(
                                     device: device,
                                     isLastConnected: lastConnected?.name == device.name && (lastConnected != nil && device.ips.contains(lastConnected!.ipAddress)),
                                     isCompact: false, // Expanded mode always!
                                     connectAction: {
-                                        quickConnectManager.connect(to: device)
+                                        if device.type == "ble" {
+                                            bleManager.connectManually(toUuid: device.deviceId)
+                                        } else {
+                                            quickConnectManager.connect(to: device)
+                                        }
                                     },
                                     namespace: animation
                                 )
