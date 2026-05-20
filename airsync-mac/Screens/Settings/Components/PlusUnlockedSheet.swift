@@ -51,7 +51,7 @@ struct PlusUnlockedSheet: View {
                         systemImage: "xmark.circle",
                         size: .large,
                         action: {
-                            AppState.shared.licenseDetails = nil
+                            Gumroad().clearLicenseDetails()
                             TrialManager.shared.clearTrial()
                             AppState.shared.isPlus = false
                         }

@@ -25,7 +25,10 @@ struct HomeView: View {
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             ZStack {
-                if appState.device == nil {
+                if appState.selectedTab == .settings {
+                    SettingsSidebarView()
+                        .transition(.opacity.combined(with: .scale))
+                } else if appState.device == nil {
                     QRScannerSidebarView()
                         .transition(.opacity.combined(with: .scale))
                 } else {
