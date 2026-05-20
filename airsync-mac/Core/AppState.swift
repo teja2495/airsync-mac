@@ -156,6 +156,25 @@ class AppState: ObservableObject {
             } else if oldValue == nil {
                 self.selectedTab = .notifications
             }
+
+            // BLE scan management: pause when a regular (non-BLE) connection is active
+            let isRegularConnection = device?.ipAddress != nil && device?.ipAddress != "BLE"
+            let wasRegularConnection = oldValue?.ipAddress != nil && oldValue?.ipAddress != "BLE"
+
+            if isRegularConnection && !wasRegularConnection {
+                // Regular connection established — stop BLE scanning to save power/bandwidth
+                if isBLEEnabled && BLECentralManager.shared.connectionStatus == .scanning {
+                    print("[state] Regular connection active — pausing BLE scan")
+                    BLECentralManager.shared.stopScanning()
+                }
+            } else if !isRegularConnection && wasRegularConnection {
+                // Regular connection lost — resume BLE scanning if BLE is enabled and not already BLE-connected
+                if isBLEEnabled && !BLECentralManager.shared.isAuthenticated {
+                    print("[state] Regular connection lost — resuming BLE scan")
+                    BLECentralManager.shared.isManuallyDisconnected = false
+                    BLECentralManager.shared.startScanning()
+                }
+            }
         }
     }
     @Published var notifications: [Notification] = []
@@ -1238,6 +1257,15 @@ class AppState: ObservableObject {
                 self.device = nil
                 self.status = nil
                 self.notifications = []
+            }
+            // Resume scanning after BLE disconnect (unless a regular connection is already active)
+            let hasRegularConnection = self.device?.ipAddress != nil && self.device?.ipAddress != "BLE"
+            if isBLEEnabled && !hasRegularConnection && !BLECentralManager.shared.isManuallyDisconnected {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    if self.isBLEEnabled && self.device?.ipAddress != "BLE" && !BLECentralManager.shared.isAuthenticated {
+                        BLECentralManager.shared.startScanning()
+                    }
+                }
             }
         }
     }
