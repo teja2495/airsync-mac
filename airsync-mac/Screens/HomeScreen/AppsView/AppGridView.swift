@@ -39,7 +39,11 @@ struct AppGridView: View {
                 .padding(12)
             }
         }
-        .searchable(text: $searchText, placement: .toolbar, prompt: "Search Apps")
+        .searchable(
+            text: $searchText,
+            placement: .toolbar,
+            prompt: "Search Apps"
+        )
         .padding(0)
     }
 }

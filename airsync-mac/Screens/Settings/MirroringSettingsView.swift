@@ -174,7 +174,7 @@ struct MirroringSettingsView: View {
 
             Image(systemName: "apps.iphone.badge.plus")
                 .font(.system(size: 64))
-                .foregroundStyle(.accentColor)
+                .foregroundStyle(Color.accentColor)
                 .padding(.bottom, 10)
 
             PlusFeaturePopover(message: "App Mirroring is an AirSync+ feature")
