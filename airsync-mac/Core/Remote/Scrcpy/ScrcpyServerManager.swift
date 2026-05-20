@@ -10,7 +10,7 @@ import Foundation
 class ScrcpyServerManager: NSObject {
     static let shared = ScrcpyServerManager()
     
-    private let serverLocalPath = Bundle.main.path(forResource: "scrcpy-server-v3.3.4", ofType: nil) ?? "/Users/sameerasandakelum/GIT/airsync-mac/scrcpy-server-v3.3.4"
+    private let serverLocalPath = Bundle.main.path(forResource: "scrcpy-server", ofType: nil) ?? "/Users/sameerasandakelum/GIT/airsync-mac/scrcpy-server"
     private let serverRemotePath = "/data/local/tmp/scrcpy-server"
     private let serverPort: Int = 1234
     
@@ -104,7 +104,7 @@ class ScrcpyServerManager: NSObject {
             "-s", serial,
             "shell",
             "CLASSPATH=\(serverRemotePath)",
-            "app_process", "/", "com.genymobile.scrcpy.Server", "3.3.4",
+            "app_process", "/", "com.genymobile.scrcpy.Server", "4.0",
             "tunnel_forward=true", "audio=false", "video=true", "control=true",
             "video_codec=h265", "video_bit_rate=8000000", "max_size=1440"
         ]
