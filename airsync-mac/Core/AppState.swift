@@ -134,6 +134,9 @@ class AppState: ObservableObject {
 
         // Reset mirroring state on launch to prevent auto-opening if it was open during last session
         self.isNativeMirroring = false
+
+        // Cleanup stale WebDAV mounts from previous sessions
+        WebDAVManager.shared.unmount()
     }
 
     @Published var minAndroidVersion = Bundle.main.infoDictionary?["AndroidVersion"] as? String ?? "2.0.0"
@@ -146,8 +149,14 @@ class AppState: ObservableObject {
                 // Validate pinned apps when connecting to a device
                 validatePinnedApps()
                 loadRecentApps()
+
+                // Mount WebDAV volume
+                if newDevice.ipAddress != "BLE" {
+                    WebDAVManager.shared.mount(ipAddress: newDevice.ipAddress, port: 9081, volumeName: newDevice.name)
+                }
             } else {
                 recentApps = []
+                WebDAVManager.shared.unmount()
             }
 
             // Automatically switch to the appropriate tab when device connection state changes
