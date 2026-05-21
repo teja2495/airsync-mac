@@ -46,7 +46,7 @@
   "quickshare.error.crypto": "Encryption error",
   "quickshare.transferError": "Transfer error with %@",
   "quickshare.settings.autoAccept": "Auto accept from my device",
-  "quickshare.settings.popupSharedImages": "Pop up shared images",
+  "quickshare.settings.popupSharedImages": "Shared file pop-ups",
   "quickshare.settings.dontDismissPopups": "Do not dismiss pop ups",
   "quickshare.settings.popupSide": "Pop up position",
   "quickshare.settings.side.left": "Left",

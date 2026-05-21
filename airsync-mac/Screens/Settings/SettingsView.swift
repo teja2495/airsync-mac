@@ -156,7 +156,7 @@ struct SettingsView: View {
                         }
 
                         HStack {
-                            Label(Localizer.shared.text("quickshare.settings.popupSharedImages"), systemImage: "photo.on.rectangle")
+                            Label(Localizer.shared.text("quickshare.settings.popupSharedImages"), systemImage: "doc.on.doc")
                             Spacer()
                             Toggle("", isOn: $appState.popupSharedImages)
                                 .toggleStyle(.switch)
