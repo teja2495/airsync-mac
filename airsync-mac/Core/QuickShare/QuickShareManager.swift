@@ -242,8 +242,8 @@ public class QuickShareManager: NSObject, ObservableObject, MainAppDelegate, Sha
         self.transferState = .finished
         self.transferProgress = 1.0
         
-        // Pop up overlay if enabled, exactly one file transferred, and it's an image
-        if AppState.shared.popupSharedImages, urls.count == 1, let firstURL = urls.first, isImage(url: firstURL) {
+        // Pop up overlay if enabled and exactly one file transferred
+        if AppState.shared.popupSharedImages, urls.count == 1, let firstURL = urls.first {
             DispatchQueue.main.async {
                 SharedImagePopupManager.shared.show(fileURL: firstURL)
             }
