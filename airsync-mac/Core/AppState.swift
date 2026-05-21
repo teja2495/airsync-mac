@@ -57,6 +57,7 @@ class AppState: ObservableObject {
         
         self.autoAcceptQuickShare = UserDefaults.standard.bool(forKey: "autoAcceptQuickShare")
         self.quickShareEnabled = UserDefaults.standard.object(forKey: "quickShareEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "quickShareEnabled")
+        self.isFileAccessEnabled = UserDefaults.standard.object(forKey: "isFileAccessEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "isFileAccessEnabled")
 
         let savedNotificationMode = UserDefaults.standard.string(forKey: "callNotificationMode") ?? CallNotificationMode.popup.rawValue
         self.callNotificationMode = CallNotificationMode(rawValue: savedNotificationMode) ?? .popup
@@ -74,6 +75,7 @@ class AppState: ObservableObject {
         self.scrcpyResolution = res
 
         self.useADBWhenPossible = UserDefaults.standard.object(forKey: "useADBWhenPossible") == nil ? true : UserDefaults.standard.bool(forKey: "useADBWhenPossible")
+        self.useNativeMirroringByDefault = UserDefaults.standard.bool(forKey: "useNativeMirroringByDefault")
         self.isMusicCardHidden = UserDefaults.standard.bool(forKey: "isMusicCardHidden")
         
         self.isCrashReportingEnabled = UserDefaults.standard.object(forKey: "isCrashReportingEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "isCrashReportingEnabled")
@@ -136,6 +138,9 @@ class AppState: ObservableObject {
         self.isNativeMirroring = false
         
         startMediaTimer()
+
+        // Cleanup stale WebDAV mounts from previous sessions
+        WebDAVManager.shared.unmount()
     }
 
     @Published var minAndroidVersion = Bundle.main.infoDictionary?["AndroidVersion"] as? String ?? "2.0.0"
@@ -148,8 +153,14 @@ class AppState: ObservableObject {
                 // Validate pinned apps when connecting to a device
                 validatePinnedApps()
                 loadRecentApps()
+
+                // Mount WebDAV volume
+                if newDevice.ipAddress != "BLE" && isPlus && isFileAccessEnabled {
+                    WebDAVManager.shared.mount(ipAddress: newDevice.ipAddress, port: 9081, volumeName: newDevice.name)
+                }
             } else {
                 recentApps = []
+                WebDAVManager.shared.unmount()
             }
 
             // Automatically switch to the appropriate tab when device connection state changes
@@ -438,6 +449,33 @@ class AppState: ObservableObject {
         }
     }
 
+    @Published var useNativeMirroringByDefault: Bool {
+        didSet {
+            UserDefaults.standard.set(useNativeMirroringByDefault, forKey: "useNativeMirroringByDefault")
+        }
+    }
+
+    @Published var isFileAccessEnabled: Bool {
+        didSet {
+            if !isPlus && licenseCheck {
+                if isFileAccessEnabled {
+                    isFileAccessEnabled = false
+                }
+                UserDefaults.standard.set(false, forKey: "isFileAccessEnabled")
+                WebDAVManager.shared.unmount()
+            } else {
+                UserDefaults.standard.set(isFileAccessEnabled, forKey: "isFileAccessEnabled")
+                if isFileAccessEnabled {
+                    if let newDevice = device, newDevice.ipAddress != "BLE" {
+                        WebDAVManager.shared.mount(ipAddress: newDevice.ipAddress, port: 9081, volumeName: newDevice.name)
+                    }
+                } else {
+                    WebDAVManager.shared.unmount()
+                }
+            }
+        }
+    }
+
     @Published var isCrashReportingEnabled: Bool {
         didSet {
             UserDefaults.standard.set(isCrashReportingEnabled, forKey: "isCrashReportingEnabled")
@@ -481,6 +519,11 @@ class AppState: ObservableObject {
         didSet {
             if !shouldSkipSave {
                 UserDefaults.standard.set(isPlus, forKey: "isPlus")
+            }
+            if !isPlus && licenseCheck {
+                if isFileAccessEnabled {
+                    isFileAccessEnabled = false
+                }
             }
             // Notify about license status change for icon revert logic
             NotificationCenter.default.post(name: NSNotification.Name("LicenseStatusChanged"), object: nil)

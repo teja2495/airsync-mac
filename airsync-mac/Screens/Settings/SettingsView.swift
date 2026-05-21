@@ -10,6 +10,7 @@ struct SettingsView: View {
     @State private var availableAdapters: [(name: String, address: String)] = []
     @State private var currentIPAddress: String = "N/A"
     @State private var showRemoteSheet = false
+    @State private var showingPlusPopover = false
 
     var body: some View {
         Group {
@@ -161,6 +162,47 @@ struct SettingsView: View {
                                 .toggleStyle(.switch)
                         }
                     }
+                }
+                .padding()
+                .glassBoxIfAvailable(radius: 18)
+
+                headerSection(title: Localizer.shared.text("settings.fileAccess.title"), icon: "folder.badge.gearshape")
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        ZStack {
+                            HStack {
+                                Label(Localizer.shared.text("settings.fileAccess.enabled"), systemImage: "externaldrive")
+                                Spacer()
+                                Toggle("", isOn: $appState.isFileAccessEnabled)
+                                    .toggleStyle(.switch)
+                                    .disabled(!AppState.shared.isPlus && AppState.shared.licenseCheck)
+                            }
+
+                            if !AppState.shared.isPlus && AppState.shared.licenseCheck {
+                                HStack {
+                                    Spacer()
+                                    Rectangle()
+                                        .fill(Color.clear)
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            showingPlusPopover = true
+                                        }
+                                        .frame(width: 500)
+                                }
+                            }
+                        }
+                    }
+                    .popover(isPresented: $showingPlusPopover, arrowEdge: .bottom) {
+                        PlusFeaturePopover(message: "File Access feature is available in AirSync+")
+                            .onTapGesture {
+                                showingPlusPopover = false
+                            }
+                    }
+
+                    Text(Localizer.shared.text("settings.fileAccess.description"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding()
                 .glassBoxIfAvailable(radius: 18)
