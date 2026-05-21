@@ -58,6 +58,9 @@ class AppState: ObservableObject {
         self.autoAcceptQuickShare = UserDefaults.standard.bool(forKey: "autoAcceptQuickShare")
         self.quickShareEnabled = UserDefaults.standard.object(forKey: "quickShareEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "quickShareEnabled")
         self.isFileAccessEnabled = UserDefaults.standard.object(forKey: "isFileAccessEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "isFileAccessEnabled")
+        self.popupSharedImages = UserDefaults.standard.object(forKey: "popupSharedImages") == nil ? true : UserDefaults.standard.bool(forKey: "popupSharedImages")
+        self.dontDismissSharedImagePopups = UserDefaults.standard.bool(forKey: "dontDismissSharedImagePopups")
+        self.popupSharedImagesOnLeft = UserDefaults.standard.bool(forKey: "popupSharedImagesOnLeft")
 
         let savedNotificationMode = UserDefaults.standard.string(forKey: "callNotificationMode") ?? CallNotificationMode.popup.rawValue
         self.callNotificationMode = CallNotificationMode(rawValue: savedNotificationMode) ?? .popup
@@ -427,6 +430,24 @@ class AppState: ObservableObject {
     @Published var quickShareEnabled: Bool {
         didSet {
             UserDefaults.standard.set(quickShareEnabled, forKey: "quickShareEnabled")
+        }
+    }
+
+    @Published var popupSharedImages: Bool {
+        didSet {
+            UserDefaults.standard.set(popupSharedImages, forKey: "popupSharedImages")
+        }
+    }
+
+    @Published var dontDismissSharedImagePopups: Bool {
+        didSet {
+            UserDefaults.standard.set(dontDismissSharedImagePopups, forKey: "dontDismissSharedImagePopups")
+        }
+    }
+
+    @Published var popupSharedImagesOnLeft: Bool {
+        didSet {
+            UserDefaults.standard.set(popupSharedImagesOnLeft, forKey: "popupSharedImagesOnLeft")
         }
     }
 
@@ -807,6 +828,9 @@ class AppState: ObservableObject {
             if QuickShareManager.shared.transferState != .idle {
                 QuickShareManager.shared.transferState = .idle
             }
+            
+            // Clear all shared image popups on disconnect
+            SharedImagePopupManager.shared.dismissAll()
 
             if self.adbConnected {
                 ADBConnector.disconnectADB()

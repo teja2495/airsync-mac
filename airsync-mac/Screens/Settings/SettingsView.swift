@@ -154,6 +154,34 @@ struct SettingsView: View {
                             Toggle("", isOn: $appState.autoAcceptQuickShare)
                                 .toggleStyle(.switch)
                         }
+
+                        HStack {
+                            Label(Localizer.shared.text("quickshare.settings.popupSharedImages"), systemImage: "photo.on.rectangle")
+                            Spacer()
+                            Toggle("", isOn: $appState.popupSharedImages)
+                                .toggleStyle(.switch)
+                        }
+
+                        if appState.popupSharedImages {
+                            HStack {
+                                Label(Localizer.shared.text("quickshare.settings.dontDismissPopups"), systemImage: "timer.slash")
+                                    .padding(.leading, 12)
+                                Spacer()
+                                Toggle("", isOn: $appState.dontDismissSharedImagePopups)
+                                    .toggleStyle(.switch)
+                            }
+
+                            HStack {
+                                Label(Localizer.shared.text("quickshare.settings.popupSide"), systemImage: "macwindow.and.ipad.arrow.left")
+                                    .padding(.leading, 12)
+                                Spacer()
+                                Picker("", selection: $appState.popupSharedImagesOnLeft) {
+                                    Text(Localizer.shared.text("quickshare.settings.side.left")).tag(true)
+                                    Text(Localizer.shared.text("quickshare.settings.side.right")).tag(false)
+                                }
+                                .pickerStyle(.segmented)
+                            }
+                        }
                     }
                 }
                 .padding()

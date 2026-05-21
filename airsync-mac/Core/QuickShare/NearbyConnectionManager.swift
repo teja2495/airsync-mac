@@ -174,7 +174,7 @@ public protocol MainAppDelegate{
 	func obtainUserConsent(for transfer:TransferMetadata, from device:RemoteDeviceInfo)
 	func incomingTransfer(id:String, didFinishWith error:Error?)
 	func incomingTransferProgress(id:String, progress:Double)
-	func transferDidComplete(id:String)
+	func transferDidComplete(id:String, urls:[URL])
 }
 
 public protocol ShareExtensionDelegate:AnyObject{
@@ -286,7 +286,7 @@ public class NearbyConnectionManager : NSObject, NetServiceDelegate, InboundNear
 	
 	public func transferDidComplete(connection: InboundNearbyConnection) {
 		guard let delegate=mainAppDelegate else {return}
-		delegate.transferDidComplete(id: connection.id)
+		delegate.transferDidComplete(id: connection.id, urls: connection.completedURLs)
 	}
 	
 	public func submitUserConsent(transferID:String, accept:Bool){

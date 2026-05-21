@@ -29,6 +29,9 @@ extension UserDefaults {
         static let showInControlCenter = "showInControlCenter"
         static let isMusicCardHidden = "isMusicCardHidden"
         static let lastOnboarding = "lastOnboarding"
+        static let popupSharedImages = "popupSharedImages"
+        static let dontDismissSharedImagePopups = "dontDismissSharedImagePopups"
+        static let popupSharedImagesOnLeft = "popupSharedImagesOnLeft"
 
         static let notificationStacks = "notificationStacks"
         static let trialToken = "trialToken"
@@ -145,6 +148,21 @@ extension UserDefaults {
     var isMusicCardHidden: Bool {
         get { bool(forKey: Keys.isMusicCardHidden) }
         set { set(newValue, forKey: Keys.isMusicCardHidden) }
+    }
+
+    var popupSharedImages: Bool {
+        get { object(forKey: Keys.popupSharedImages) == nil ? true : bool(forKey: Keys.popupSharedImages) }
+        set { set(newValue, forKey: Keys.popupSharedImages) }
+    }
+
+    var dontDismissSharedImagePopups: Bool {
+        get { bool(forKey: Keys.dontDismissSharedImagePopups) }
+        set { set(newValue, forKey: Keys.dontDismissSharedImagePopups) }
+    }
+
+    var popupSharedImagesOnLeft: Bool {
+        get { bool(forKey: Keys.popupSharedImagesOnLeft) }
+        set { set(newValue, forKey: Keys.popupSharedImagesOnLeft) }
     }
 
     var trialToken: String? {
