@@ -128,8 +128,7 @@ struct SyncSettingsView: View {
                     }
                 }
                 .padding()
-                .background(.background.opacity(0.3))
-                .cornerRadius(12.0)
+                .glassBoxIfAvailable(radius: 18)
 
                 // 2. Clipboard Sync
                 headerSection(title: "Clipboard Sync", icon: "clipboard")
@@ -146,8 +145,7 @@ struct SyncSettingsView: View {
                     .opacity(appState.isClipboardSyncEnabled ? 1.0 : 0.5)
                 }
                 .padding()
-                .background(.background.opacity(0.3))
-                .cornerRadius(12.0)
+                .glassBoxIfAvailable(radius: 18)
 
                 // 3. Notifications
                 headerSection(title: "Notifications Sync", icon: "bell.badge")
@@ -208,8 +206,7 @@ struct SyncSettingsView: View {
                     }
                 }
                 .padding()
-                .background(.background.opacity(0.3))
-                .cornerRadius(12.0)
+                .glassBoxIfAvailable(radius: 18)
                 .onAppear {
                     checkNotificationPermissions()
                 }
@@ -236,8 +233,7 @@ struct SyncSettingsView: View {
                     SettingsToggleView(name: "Ring for calls", icon: "speaker.wave.3", isOn: $appState.ringForCalls)
                 }
                 .padding()
-                .background(.background.opacity(0.3))
-                .cornerRadius(12.0)
+                .glassBoxIfAvailable(radius: 18)
 
                 // 5. Remote Accessibility Control
                 headerSection(title: "Remote Accessibility", icon: "accessibility")
@@ -251,8 +247,7 @@ struct SyncSettingsView: View {
                     }
                 }
                 .padding()
-                .background(.background.opacity(0.3))
-                .cornerRadius(12.0)
+                .glassBoxIfAvailable(radius: 18)
                 .sheet(isPresented: $showRemoteSheet) {
                     RemotePermissionView()
                 }

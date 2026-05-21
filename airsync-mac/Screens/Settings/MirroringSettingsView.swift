@@ -181,8 +181,7 @@ struct MirroringSettingsView: View {
                     }
                 }
                 .padding()
-                .background(.background.opacity(0.3))
-                .cornerRadius(12.0)
+                .glassBoxIfAvailable(radius: 18)
             }
             .padding()
         }

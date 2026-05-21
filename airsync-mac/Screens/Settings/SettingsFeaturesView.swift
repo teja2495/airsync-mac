@@ -290,8 +290,7 @@ struct SettingsFeaturesView: View {
 
             }
             .padding()
-            .background(.background.opacity(0.3))
-            .cornerRadius(12.0)
+            .glassBoxIfAvailable(radius: 18)
             .onAppear{
                 xCoords = UserDefaults.standard.manualPositionCoords[0]
                 yCoords = UserDefaults.standard.manualPositionCoords[1]
@@ -311,8 +310,7 @@ struct SettingsFeaturesView: View {
                 .opacity(appState.isClipboardSyncEnabled ? 1.0 : 0.5)
             }
             .padding()
-            .background(.background.opacity(0.3))
-            .cornerRadius(12.0)
+            .glassBoxIfAvailable(radius: 18)
 
             // Notifications
             VStack{
@@ -375,8 +373,7 @@ struct SettingsFeaturesView: View {
                 }
             }
             .padding()
-            .background(.background.opacity(0.3))
-            .cornerRadius(12.0)
+            .glassBoxIfAvailable(radius: 18)
             .onAppear{
                 checkNotificationPermissions()
             }
@@ -402,8 +399,7 @@ struct SettingsFeaturesView: View {
                 SettingsToggleView(name: "Ring for calls", icon: "speaker.wave.3", isOn: $appState.ringForCalls)
             }
             .padding()
-            .background(.background.opacity(0.3))
-            .cornerRadius(12.0)
+            .glassBoxIfAvailable(radius: 18)
         }
     }
 
