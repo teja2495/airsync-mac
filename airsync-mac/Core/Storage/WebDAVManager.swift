@@ -51,11 +51,6 @@ class WebDAVManager {
                 if process.terminationStatus == 0 {
                     self.isMounted = true
                     print("[webdav] Successfully mounted Android volume")
-                    
-                    // Automatically open the folder in Finder for the user
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        self.openInFinder()
-                    }
                 } else {
                     print("[webdav] Failed to mount WebDAV volume. Status: \(process.terminationStatus)")
                 }
