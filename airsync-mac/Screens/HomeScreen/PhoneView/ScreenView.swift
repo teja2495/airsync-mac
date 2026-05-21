@@ -87,12 +87,15 @@ struct ScreenView: View {
                             label: "Mirror",
                             systemImage: "apps.iphone",
                             action: {
-                                ADBConnector
-                                    .startScrcpy(
+                                if appState.useNativeMirroringByDefault {
+                                    appState.isNativeMirroring = true
+                                } else {
+                                    ADBConnector.startScrcpy(
                                         ip: appState.device?.ipAddress ?? "",
                                         port: appState.adbPort,
                                         deviceName: appState.device?.name ?? "My Phone"
                                     )
+                                }
                             }
                         )
                         .transition(.identity)
@@ -101,8 +104,18 @@ struct ScreenView: View {
                             modifiers: .command
                         )
                         .contextMenu {
-                            Button("Android Mirror") {
-                                appState.isNativeMirroring = true
+                            if appState.useNativeMirroringByDefault {
+                                Button("scrcpy Mirror") {
+                                    ADBConnector.startScrcpy(
+                                        ip: appState.device?.ipAddress ?? "",
+                                        port: appState.adbPort,
+                                        deviceName: appState.device?.name ?? "My Phone"
+                                    )
+                                }
+                            } else {
+                                Button("Android Mirror") {
+                                    appState.isNativeMirroring = true
+                                }
                             }
                             
                             Button("Desktop Mode") {

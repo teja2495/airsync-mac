@@ -37,11 +37,37 @@ struct MirroringSettingsView: View {
     private var unlockedMirroringView: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                headerSection(title: "App Mirroring", icon: "apps.iphone.badge.plus")
+                VStack{
+                    HStack{
+                        Label(L("settings.mirroring.defaultMode"), systemImage: "rectangle.on.rectangle.badge.gearshape")
+                        Spacer()
+                        Picker("", selection: $appState.useNativeMirroringByDefault) {
+                            Label(L("settings.mirroring.scrcpy.title"), systemImage: "macwindow").tag(false)
+                            Label(L("settings.mirroring.native.title"), systemImage: "apps.iphone").tag(true)
+                            //                        Text(L("settings.mirroring.scrcpy.title")).tag(false)
+                            //                        Text(L("settings.mirroring.native.title")).tag(true)
+                        }
+                        .pickerStyle(.segmented)
+                        .controlSize(.large)
+                    }
+
+                    Spacer(minLength: 8)
+
+                    if(appState.useNativeMirroringByDefault) {
+                        Text(L("settings.mirroring.native.info"))
+                            .font(.caption)
+                    } else {
+                        Text(L("settings.mirroring.scrcpy.info"))
+                            .font(.caption)
+                    }
+                }
+                .padding()
+
+                headerSection(title: L("settings.mirroring.appMirroring"), icon: "apps.iphone.badge.plus")
 
                 VStack(spacing: 16) {
                     HStack {
-                        Label("Enable App Mirroring", systemImage: "apps.iphone.badge.plus")
+                        Label(L("settings.mirroring.enableAppMirroring"), systemImage: "apps.iphone.badge.plus")
                         Spacer()
                         Toggle("", isOn: $appState.mirroringPlus)
                             .toggleStyle(.switch)
@@ -51,7 +77,7 @@ struct MirroringSettingsView: View {
 
                     VStack(spacing: 12) {
                         HStack {
-                            Text("Video bitrate")
+                            Text(L("settings.mirroring.videoBitrate"))
                             Spacer()
 
                             Slider(
@@ -68,14 +94,14 @@ struct MirroringSettingsView: View {
                             .focusable(false)
                             .frame(maxWidth: 150)
 
-                            Text("\(AppState.shared.scrcpyBitrate) Mbps")
+                            Text(String(format: L("settings.mirroring.bitrateFormat"), AppState.shared.scrcpyBitrate))
                                 .monospacedDigit()
                                 .foregroundColor(isDragging ? .accentColor : .secondary)
                                 .frame(width: 60, alignment: .leading)
                         }
 
                         HStack {
-                            Text("Max size")
+                            Text(L("settings.mirroring.maxSize"))
                             Spacer()
 
                             Slider(
@@ -98,22 +124,22 @@ struct MirroringSettingsView: View {
                                 .frame(width: 60, alignment: .leading)
                         }
 
-                        SettingsToggleView(name: "Stay on top", icon: "inset.filled.toptrailing.rectangle.portrait", isOn: $scrcpyOnTop)
+                        SettingsToggleView(name: L("settings.mirroring.stayOnTop"), icon: "inset.filled.toptrailing.rectangle.portrait", isOn: $scrcpyOnTop)
 
-                        SettingsToggleView(name: "Stay awake (charging)", icon: "cup.and.heat.waves", isOn: $stayAwake)
+                        SettingsToggleView(name: L("settings.mirroring.stayAwake"), icon: "cup.and.heat.waves", isOn: $stayAwake)
 
-                        SettingsToggleView(name: "Blank display", icon: "iphone.gen3.slash", isOn: $turnScreenOff)
+                        SettingsToggleView(name: L("settings.mirroring.blankDisplay"), icon: "iphone.gen3.slash", isOn: $turnScreenOff)
 
-                        SettingsToggleView(name: "No audio", icon: "speaker.slash", isOn: $noAudio)
+                        SettingsToggleView(name: L("settings.mirroring.noAudio"), icon: "speaker.slash", isOn: $noAudio)
 
-                        SettingsToggleView(name: "Continue app after closing", icon: "arrow.turn.up.forward.iphone", isOn: $continueApp)
+                        SettingsToggleView(name: L("settings.mirroring.continueApp"), icon: "arrow.turn.up.forward.iphone", isOn: $continueApp)
 
-                        SettingsToggleView(name: "Direct keyboard input", icon: "keyboard.chevron.compact.down", isOn: $directKeyInput)
+                        SettingsToggleView(name: L("settings.mirroring.directKeyboardInput"), icon: "keyboard.chevron.compact.down", isOn: $directKeyInput)
 
                         HStack {
-                            Text("dpi")
+                            Text(L("settings.mirroring.dpi"))
                             Spacer()
-                            TextField("dpi", text: Binding(
+                            TextField(L("settings.mirroring.dpi"), text: Binding(
                                 get: { UserDefaults.standard.scrcpyDesktopDpi },
                                 set: { newValue in
                                     UserDefaults.standard.scrcpyDesktopDpi = newValue.filter { "0123456789".contains($0) }
@@ -124,17 +150,17 @@ struct MirroringSettingsView: View {
                         }
 
                         HStack {
-                            Text("Manual launch position (x,y)")
+                            Text(L("settings.mirroring.manualPosition"))
                             Spacer()
 
-                            TextField("x", text: $xCoords)
+                            TextField(L("settings.mirroring.x"), text: $xCoords)
                                 .textFieldStyle(.roundedBorder)
                                 .onChange(of: xCoords) { oldValue, newValue in
                                     xCoords = newValue.filter { "0123456789".contains($0) }
                                 }
                                 .disabled(!manualPosition)
 
-                            TextField("y", text: $yCoords)
+                            TextField(L("settings.mirroring.y"), text: $yCoords)
                                 .textFieldStyle(.roundedBorder)
                                 .onChange(of: yCoords) { oldValue, newValue in
                                     yCoords = newValue.filter { "0123456789".contains($0) }
@@ -142,7 +168,7 @@ struct MirroringSettingsView: View {
                                 .disabled(!manualPosition)
 
                             GlassButtonView(
-                                label: "Set",
+                                label: L("settings.mirroring.set"),
                                 action: {
                                     UserDefaults.standard.manualPositionCoords = [xCoords, yCoords]
                                 }
@@ -177,7 +203,7 @@ struct MirroringSettingsView: View {
                 .foregroundStyle(Color.accentColor)
                 .padding(.bottom, 10)
 
-            PlusFeaturePopover(message: "App Mirroring is an AirSync+ feature")
+            PlusFeaturePopover(message: L("settings.mirroring.plusFeatureMessage"))
                 .background(Color.secondary.opacity(0.05))
                 .cornerRadius(12)
                 .overlay(
@@ -203,3 +229,4 @@ struct MirroringSettingsView: View {
         .padding(.horizontal, 8)
     }
 }
+

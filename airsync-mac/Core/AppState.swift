@@ -75,6 +75,7 @@ class AppState: ObservableObject {
         self.scrcpyResolution = res
 
         self.useADBWhenPossible = UserDefaults.standard.object(forKey: "useADBWhenPossible") == nil ? true : UserDefaults.standard.bool(forKey: "useADBWhenPossible")
+        self.useNativeMirroringByDefault = UserDefaults.standard.bool(forKey: "useNativeMirroringByDefault")
         self.isMusicCardHidden = UserDefaults.standard.bool(forKey: "isMusicCardHidden")
         
         self.isCrashReportingEnabled = UserDefaults.standard.object(forKey: "isCrashReportingEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "isCrashReportingEnabled")
@@ -436,6 +437,12 @@ class AppState: ObservableObject {
     @Published var isMusicCardHidden: Bool = false {
         didSet {
             UserDefaults.standard.set(isMusicCardHidden, forKey: "isMusicCardHidden")
+        }
+    }
+
+    @Published var useNativeMirroringByDefault: Bool {
+        didSet {
+            UserDefaults.standard.set(useNativeMirroringByDefault, forKey: "useNativeMirroringByDefault")
         }
     }
 

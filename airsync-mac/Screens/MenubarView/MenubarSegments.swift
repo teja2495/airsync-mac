@@ -91,16 +91,30 @@ struct TopSegmentView: View {
                             iconOnly: true,
                             circleSize: toolButtonSize,
                             action: {
-                                ADBConnector.startScrcpy(
-                                    ip: appState.device?.ipAddress ?? "",
-                                    port: appState.adbPort,
-                                    deviceName: appState.device?.name ?? "My Phone"
-                                )
+                                if appState.useNativeMirroringByDefault {
+                                    appState.isNativeMirroring = true
+                                } else {
+                                    ADBConnector.startScrcpy(
+                                        ip: appState.device?.ipAddress ?? "",
+                                        port: appState.adbPort,
+                                        deviceName: appState.device?.name ?? "My Phone"
+                                    )
+                                }
                             }
                         )
                         .contextMenu {
-                            Button("Android Mirror") {
-                                appState.isNativeMirroring = true
+                            if appState.useNativeMirroringByDefault {
+                                Button("scrcpy Mirror") {
+                                    ADBConnector.startScrcpy(
+                                        ip: appState.device?.ipAddress ?? "",
+                                        port: appState.adbPort,
+                                        deviceName: appState.device?.name ?? "My Phone"
+                                    )
+                                }
+                            } else {
+                                Button("Android Mirror") {
+                                    appState.isNativeMirroring = true
+                                }
                             }
                             
                             Button("Desktop Mode") {
