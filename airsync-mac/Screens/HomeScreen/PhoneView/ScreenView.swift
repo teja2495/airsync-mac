@@ -40,7 +40,7 @@ struct ScreenView: View {
                     GlassButtonView(
                         label: "Send",
                         systemImage: "square.and.arrow.up",
-                        iconOnly: appState.adbConnected,
+                        iconOnly: true,
                         action: {
                             let panel = NSOpenPanel()
                             panel.allowsMultipleSelection = true
@@ -58,7 +58,7 @@ struct ScreenView: View {
                     .keyboardShortcut(
                         "f",
                         modifiers: .command
-                    )
+                     )
 
                     GlassButtonView(
                         label: "Browse",
@@ -84,7 +84,7 @@ struct ScreenView: View {
                     GlassButtonView(
                         label: "Mute",
                         systemImage: appState.silenceAllNotifications ? "bell.slash.fill" : "bell.badge",
-                        iconOnly: appState.adbConnected,
+                        iconOnly: true,
                         action: {
                             appState.silenceAllNotifications.toggle()
                         }

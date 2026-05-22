@@ -31,8 +31,18 @@ struct GlassButtonView: View {
             ProgressView()
                 .controlSize(.small)
                 .frame(minWidth: 20)
-        } else if customIconSizingActive, iconOnly, let (imgView, altText) = iconImageView() {
-            imgView.accessibilityLabel(Text(altText))
+        } else if iconOnly {
+            if customIconSizingActive, let (imgView, altText) = iconImageView() {
+                imgView.accessibilityLabel(Text(altText))
+            } else {
+                if let systemImage {
+                    Image(systemName: systemImage)
+                } else if let image {
+                    Image(image)
+                } else {
+                    Text(label)
+                }
+            }
         } else {
             if let systemImage { Label(label, systemImage: systemImage) }
             else if let image { Label(label, image: image) }
