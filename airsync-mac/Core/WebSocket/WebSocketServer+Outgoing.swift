@@ -74,6 +74,17 @@ extension WebSocketServer {
             if let action = data["action"] as? String {
                 BLECentralManager.shared.writeChunked(characteristicUUID: BLEConstants.charMediaControl, payload: action)
             }
+        case "callControl":
+            if let action = data["action"] as? String {
+                let bleAction: String
+                switch action {
+                case "accept": bleAction = "callAccept"
+                case "decline": bleAction = "callDecline"
+                case "end": bleAction = "callEnd"
+                default: bleAction = action
+                }
+                BLECentralManager.shared.writeChunked(characteristicUUID: BLEConstants.charMediaControl, payload: bleAction)
+            }
         case "clipboardUpdate":
             if let content = data["content"] as? String {
                 BLECentralManager.shared.writeChunked(characteristicUUID: BLEConstants.charClipboardDataWrite, payload: content)
@@ -324,12 +335,25 @@ extension WebSocketServer {
     }
 
     func sendCallAction(eventId: String, action: String) {
+        let commandAction: String
         let keyCode: String
         switch action.lowercased() {
-        case "accept": keyCode = "5"
-        case "decline", "end": keyCode = "6"
-        default: keyCode = "6"
+        case "accept":
+            commandAction = "accept"
+            keyCode = "5"
+        case "decline":
+            commandAction = "decline"
+            keyCode = "6"
+        case "end":
+            commandAction = "end"
+            keyCode = "6"
+        default:
+            commandAction = action.lowercased()
+            keyCode = "6"
         }
+        
+        // Natively send programmatic control command over WebSocket / BLE sync channel
+        sendMessage(type: "callControl", data: ["action": commandAction])
         
         DispatchQueue.global(qos: .userInitiated).async {
             guard let adbPath = ADBConnector.findExecutable(named: "adb", fallbackPaths: ADBConnector.possibleADBPaths) else { return }
@@ -346,7 +370,7 @@ extension WebSocketServer {
                     try process.run()
                     process.waitUntilExit()
                 } catch {
-                    print("[websocket] Failed to send call action: \(error)")
+                    print("[websocket] Failed to send call action via ADB: \(error)")
                 }
             }
         }
