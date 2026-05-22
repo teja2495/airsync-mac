@@ -23,7 +23,7 @@ struct DeviceStatusView: View {
                 let title = music.title.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !title.isEmpty && !appState.isMusicCardHidden && showMediaToggle {
                     MediaPlayerView(music: music)
-                        .transition(.opacity.combined(with: .scale))
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
 
