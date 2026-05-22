@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "Nur Anzahl",
   "settings.menubar.notifications.icons": "Nur Symbole",
   "settings.menubar.notifications.none": "Keine",
-  "settings.menubar.showAlbumArt": "Album-Cover anzeigen"
+  "settings.menubar.showAlbumArt": "Album-Cover anzeigen",
+  "settings.menubar.fontSize": "Schriftgröße"
 }

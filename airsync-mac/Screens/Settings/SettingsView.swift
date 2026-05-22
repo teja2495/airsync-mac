@@ -255,6 +255,25 @@ struct SettingsView: View {
                 headerSection(title: L("settings.menubar"), icon: "menubar.arrow.up.rectangle")
                 VStack(spacing: 12) {
                     HStack {
+                        Label(L("settings.menubar.fontSize"), systemImage: "textformat.size")
+                        Spacer()
+                        Slider(
+                            value: $appState.menubarFontSize,
+                            in: 10...16,
+                            step: 1
+                        )
+                        .frame(width: 150)
+                        .controlSize(.small)
+                        
+                        Text("\(Int(appState.menubarFontSize))")
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundColor(.secondary)
+                            .frame(width: 20, alignment: .trailing)
+                    }
+
+                    Divider()
+
+                    HStack {
                         Label(L("settings.menubar.showIcon"), systemImage: "iphone.gen3")
                         Spacer()
                         Toggle("", isOn: $appState.showMenubarIcon)

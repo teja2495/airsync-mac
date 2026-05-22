@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "僅計數",
   "settings.menubar.notifications.icons": "僅圖標",
   "settings.menubar.notifications.none": "無",
-  "settings.menubar.showAlbumArt": "顯示專輯封面"
+  "settings.menubar.showAlbumArt": "顯示專輯封面",
+  "settings.menubar.fontSize": "字型大小"
 }

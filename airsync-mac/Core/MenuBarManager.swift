@@ -93,7 +93,8 @@ class MenuBarManager: NSObject {
             appState.$menubarUnreadBadgeStyle.map { _ in () }.eraseToAnyPublisher(),
             appState.$menubarUnreadBadgeColor.map { _ in () }.eraseToAnyPublisher(),
             appState.$showMenubarDeviceName.map { _ in () }.eraseToAnyPublisher(),
-            appState.$menubarTextMaxLength.map { _ in () }.eraseToAnyPublisher()
+            appState.$menubarTextMaxLength.map { _ in () }.eraseToAnyPublisher(),
+            appState.$menubarFontSize.map { _ in () }.eraseToAnyPublisher()
         ]
         
         let group3: [AnyPublisher<Void, Never>] = [
@@ -304,6 +305,7 @@ struct MenubarStatusView: View {
             if appState.showMenubarIcon {
                 let iconName = isConnected ? "iphone.gen3" : "iphone.slash"
                 Image(systemName: iconName)
+                    .font(.system(size: appState.menubarFontSize))
                     .imageScale(.medium)
             }
             
@@ -312,7 +314,7 @@ struct MenubarStatusView: View {
                 if appState.showMenubarText {
                     if let dragLabel = appState.temporaryDragLabel {
                         Text(dragLabel)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: appState.menubarFontSize, weight: .medium))
                     } else {
                         HStack(spacing: 5) {
                             // Left part: Device Name or Music Info
@@ -328,23 +330,26 @@ struct MenubarStatusView: View {
                                        !music.albumArt.isEmpty,
                                        let data = Data(base64Encoded: music.albumArt.stripBase64Prefix()) ?? Data(base64Encoded: music.albumArt),
                                        let nsImage = NSImage(data: data) {
+                                        let albumArtSize = appState.menubarFontSize + 2
+                                        let cornerRadius = albumArtSize * 3 / 14
                                         Image(nsImage: nsImage)
                                             .resizable()
                                             .aspectRatio(contentMode: .fill)
-                                            .frame(width: 14, height: 14)
-                                            .clipShape(RoundedRectangle(cornerRadius: 3))
+                                            .frame(width: albumArtSize, height: albumArtSize)
+                                            .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
                                     } else {
                                         Image(systemName: "music.note")
+                                            .font(.system(size: appState.menubarFontSize))
                                             .foregroundColor(.accentColor)
                                     }
                                     Text(musicText)
-                                        .font(.system(size: 12))
+                                        .font(.system(size: appState.menubarFontSize))
                                 }
                             } else if appState.showMenubarDeviceName {
                                 let deviceName = appState.device?.name ?? (bleManager.isAuthenticated ? bleManager.connectedDeviceName : nil) ?? ""
                                 if !deviceName.isEmpty {
                                     Text(truncate(text: deviceName))
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(.system(size: appState.menubarFontSize, weight: .medium))
                                 }
                             }
                             
@@ -356,17 +361,19 @@ struct MenubarStatusView: View {
                                     let hasPrefix = showMusic || (appState.showMenubarDeviceName && !(appState.device?.name ?? bleManager.connectedDeviceName ?? "").isEmpty)
                                     if hasPrefix {
                                         Text("•")
+                                            .font(.system(size: appState.menubarFontSize))
                                             .foregroundColor(.secondary)
                                     }
                                     
                                     if style == "icon" || style == "both" {
                                         Image(systemName: getBatteryIconName(level: battery.level, isCharging: battery.isCharging))
+                                            .font(.system(size: appState.menubarFontSize))
                                             .foregroundColor(batteryColor(level: battery.level, isCharging: battery.isCharging))
                                     }
                                     
                                     if style == "percentage" || style == "both" {
                                         Text("\(battery.level)%")
-                                            .font(.system(size: 11, design: .monospaced))
+                                            .font(.system(size: appState.menubarFontSize - 1, design: .monospaced))
                                     }
                                 }
                             }
@@ -380,15 +387,15 @@ struct MenubarStatusView: View {
                     if unreadCount > 0 {
                         if appState.menubarUnreadBadgeStyle == "badge" {
                             Text("\(unreadCount)")
-                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .font(.system(size: appState.menubarFontSize - 3, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 1)
+                                .padding(.horizontal, max(4, appState.menubarFontSize * 5 / 12))
+                                .padding(.vertical, max(1, appState.menubarFontSize * 1 / 12))
                                 .background(badgeColor)
                                 .clipShape(Capsule())
                         } else if appState.menubarUnreadBadgeStyle == "text" {
                             Text("\(unreadCount)*")
-                                .font(.system(size: 11, weight: .semibold))
+                                .font(.system(size: appState.menubarFontSize - 1, weight: .semibold))
                                 .foregroundColor(.secondary)
                         }
                     }
@@ -400,18 +407,20 @@ struct MenubarStatusView: View {
                     if !recentPackages.isEmpty {
                         HStack(spacing: 4) {
                             ForEach(recentPackages, id: \.self) { package in
+                                let appIconSize = appState.menubarFontSize + 2
+                                let appCornerRadius = appIconSize * 3 / 14
                                 if let path = appState.androidApps[package]?.iconUrl,
                                    let image = Image(filePath: path) {
                                     image
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                        .frame(width: 14, height: 14)
-                                        .clipShape(RoundedRectangle(cornerRadius: 3))
+                                        .frame(width: appIconSize, height: appIconSize)
+                                        .clipShape(RoundedRectangle(cornerRadius: appCornerRadius))
                                 } else {
                                     Image(systemName: "app.badge")
                                         .resizable()
                                         .aspectRatio(contentMode: .fit)
-                                        .frame(width: 14, height: 14)
+                                        .frame(width: appIconSize, height: appIconSize)
                                         .foregroundColor(.secondary)
                                 }
                             }

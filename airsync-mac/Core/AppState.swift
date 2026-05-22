@@ -51,6 +51,7 @@ class AppState: ObservableObject {
         self.menubarBatteryStyle = UserDefaults.standard.string(forKey: "menubarBatteryStyle") ?? "both"
         self.showMenubarMusicIcon = UserDefaults.standard.object(forKey: "showMenubarMusicIcon") == nil ? true : UserDefaults.standard.bool(forKey: "showMenubarMusicIcon")
         self.showMenubarAlbumArt = UserDefaults.standard.object(forKey: "showMenubarAlbumArt") == nil ? true : UserDefaults.standard.bool(forKey: "showMenubarAlbumArt")
+        self.menubarFontSize = UserDefaults.standard.object(forKey: "menubarFontSize") == nil ? 12.0 : UserDefaults.standard.double(forKey: "menubarFontSize")
         self.menubarUnreadBadgeStyle = UserDefaults.standard.string(forKey: "menubarUnreadBadgeStyle") ?? "badge"
         self.menubarUnreadBadgeColor = UserDefaults.standard.string(forKey: "menubarUnreadBadgeColor") ?? "accent"
         self.showMenubarPillStroke = UserDefaults.standard.bool(forKey: "showMenubarPillStroke")
@@ -311,6 +312,12 @@ class AppState: ObservableObject {
     @Published var showMenubarAlbumArt: Bool {
         didSet {
             UserDefaults.standard.set(showMenubarAlbumArt, forKey: "showMenubarAlbumArt")
+        }
+    }
+
+    @Published var menubarFontSize: Double {
+        didSet {
+            UserDefaults.standard.set(menubarFontSize, forKey: "menubarFontSize")
         }
     }
 

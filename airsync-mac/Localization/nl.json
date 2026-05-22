@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "Alleen aantal",
   "settings.menubar.notifications.icons": "Alleen pictogrammen",
   "settings.menubar.notifications.none": "Geen",
-  "settings.menubar.showAlbumArt": "Albumhoes weergeven"
+  "settings.menubar.showAlbumArt": "Albumhoes weergeven",
+  "settings.menubar.fontSize": "Lettergrootte"
 }

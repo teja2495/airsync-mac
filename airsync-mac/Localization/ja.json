@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "件数のみ",
   "settings.menubar.notifications.icons": "アイコンのみ",
   "settings.menubar.notifications.none": "なし",
-  "settings.menubar.showAlbumArt": "アルバムアートを表示"
+  "settings.menubar.showAlbumArt": "アルバムアートを表示",
+  "settings.menubar.fontSize": "フォントサイズ"
 }

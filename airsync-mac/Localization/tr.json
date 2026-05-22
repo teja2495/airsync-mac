@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "Count Only",
   "settings.menubar.notifications.icons": "Icons Only",
   "settings.menubar.notifications.none": "None",
-  "settings.menubar.showAlbumArt": "Show album art"
+  "settings.menubar.showAlbumArt": "Show album art",
+  "settings.menubar.fontSize": "Yazı tipi boyutu"
 }

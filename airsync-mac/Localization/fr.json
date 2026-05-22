@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "Nombre uniquement",
   "settings.menubar.notifications.icons": "Icônes uniquement",
   "settings.menubar.notifications.none": "Aucune",
-  "settings.menubar.showAlbumArt": "Afficher la pochette de l'album"
+  "settings.menubar.showAlbumArt": "Afficher la pochette de l'album",
+  "settings.menubar.fontSize": "Taille de police"
 }

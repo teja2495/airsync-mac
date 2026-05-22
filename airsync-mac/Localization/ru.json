@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "Только количество",
   "settings.menubar.notifications.icons": "Только значки",
   "settings.menubar.notifications.none": "Нет",
-  "settings.menubar.showAlbumArt": "Показывать обложку альбома"
+  "settings.menubar.showAlbumArt": "Показывать обложку альбома",
+  "settings.menubar.fontSize": "Размер шрифта"
 }

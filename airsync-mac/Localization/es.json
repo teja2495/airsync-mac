@@ -86,5 +86,6 @@
   "settings.menubar.notifications.count": "Solo recuento",
   "settings.menubar.notifications.icons": "Solo iconos",
   "settings.menubar.notifications.none": "Ninguno",
-  "settings.menubar.showAlbumArt": "Mostrar portada del álbum"
+  "settings.menubar.showAlbumArt": "Mostrar portada del álbum",
+  "settings.menubar.fontSize": "Tamaño de letra"
 }
