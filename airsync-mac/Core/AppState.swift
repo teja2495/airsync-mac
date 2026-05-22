@@ -754,6 +754,9 @@ class AppState: ObservableObject {
         if (callEvent.direction == .incoming && callEvent.state == .ringing) ||
            (callEvent.direction == .outgoing && callEvent.state == .offhook) {
 
+            // Always set activeCall so the Menubar card is visible during a call in any mode
+            self.activeCall = callEvent
+
             // Handle notification based on user preference
             if callNotificationMode == .notification {
                 // Only show system notification
@@ -766,7 +769,6 @@ class AppState: ObservableObject {
                 if callEvent.direction == .incoming && callEvent.state == .ringing && self.ringForCalls {
                     self.playCallRingtone()
                 }
-                self.activeCall = callEvent
                 print("[state] Active call set for popup display")
             } else if callNotificationMode == .none {
                 // Don't show anything

@@ -91,7 +91,7 @@ struct airsync_macApp: App {
                         if !appState.isNativeMirroring {
                             dismissWindow(id: "nativeMirror")
                         }
-                        if appState.activeCall == nil {
+                        if appState.activeCall == nil || appState.callNotificationMode != .popup {
                             dismissWindow(id: "callWindow")
                         }
                         if !appState.showingQuickShareTransfer {
@@ -101,10 +101,19 @@ struct airsync_macApp: App {
             }
         }
         .onChange(of: appState.activeCall) { oldValue, newValue in
-            if newValue != nil {
+            if newValue != nil && appState.callNotificationMode == .popup {
                 openWindow(id: "callWindow")
             } else {
                 dismissWindow(id: "callWindow")
+            }
+        }
+        .onChange(of: appState.callNotificationMode) { oldValue, newValue in
+            if appState.activeCall != nil {
+                if newValue == .popup {
+                    openWindow(id: "callWindow")
+                } else {
+                    dismissWindow(id: "callWindow")
+                }
             }
         }
         .onChange(of: appState.showingQuickShareTransfer) { oldValue, newValue in
