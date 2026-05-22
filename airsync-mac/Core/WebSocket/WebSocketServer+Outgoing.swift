@@ -336,44 +336,19 @@ extension WebSocketServer {
 
     func sendCallAction(eventId: String, action: String) {
         let commandAction: String
-        let keyCode: String
         switch action.lowercased() {
         case "accept":
             commandAction = "accept"
-            keyCode = "5"
         case "decline":
             commandAction = "decline"
-            keyCode = "6"
         case "end":
             commandAction = "end"
-            keyCode = "6"
         default:
             commandAction = action.lowercased()
-            keyCode = "6"
         }
         
         // Natively send programmatic control command over WebSocket / BLE sync channel
         sendMessage(type: "callControl", data: ["action": commandAction])
-        
-        DispatchQueue.global(qos: .userInitiated).async {
-            guard let adbPath = ADBConnector.findExecutable(named: "adb", fallbackPaths: ADBConnector.possibleADBPaths) else { return }
-            
-            let adbIP = AppState.shared.adbConnectedIP.isEmpty ? AppState.shared.device?.ipAddress ?? "" : AppState.shared.adbConnectedIP
-            if !adbIP.isEmpty {
-                let adbPort = AppState.shared.adbPort
-                let fullAddress = "\(adbIP):\(adbPort)"
-                let process = Process()
-                process.executableURL = URL(fileURLWithPath: adbPath)
-                process.arguments = ["-s", fullAddress, "shell", "input", "keyevent", keyCode]
-                
-                do {
-                    try process.run()
-                    process.waitUntilExit()
-                } catch {
-                    print("[websocket] Failed to send call action via ADB: \(error)")
-                }
-            }
-        }
     }
 
     // MARK: - File Transfer (Mac -> Android)

@@ -114,8 +114,8 @@ struct CallWindowView: View {
                     }
                 }
 
-                // Action buttons (only show when ringing/offhook AND (ADB is connected OR companion device is active))
-                if showActionButtons && (appState.adbConnected || appState.device != nil) {
+                // Action buttons (only show when ringing/offhook AND companion device is active AND is an AirSync+ subscriber)
+                if showActionButtons && appState.device != nil && appState.isPlus {
                     HStack(spacing: 16) {
 
                         if callEvent.direction == .incoming {
