@@ -2,6 +2,8 @@ import SwiftUI
 
 struct MenubarSettingsView: View {
     @ObservedObject var appState = AppState.shared
+    @State private var showingPlusPopover = false
+    @State private var plusPopoverMessage = ""
 
     var body: some View {
         ScrollView {
@@ -101,8 +103,21 @@ struct MenubarSettingsView: View {
                         HStack {
                             Label(L("settings.menubar.showAlbumArt"), systemImage: "photo")
                             Spacer()
-                            Toggle("", isOn: $appState.showMenubarAlbumArt)
-                                .toggleStyle(.switch)
+                            ZStack {
+                                Toggle("", isOn: $appState.showMenubarAlbumArt)
+                                    .toggleStyle(.switch)
+                                    .disabled(!appState.isPlus && appState.licenseCheck)
+
+                                if !appState.isPlus && appState.licenseCheck {
+                                    Color.clear
+                                        .contentShape(Rectangle())
+                                        .onTapGesture {
+                                            plusPopoverMessage = L("settings.menubar.albumArt.plusFeatureMessage")
+                                            showingPlusPopover = true
+                                        }
+                                        .frame(width: 50, height: 30)
+                                }
+                            }
                         }
                         .transition(.opacity.combined(with: .move(edge: .top)))
                     }
@@ -116,13 +131,25 @@ struct MenubarSettingsView: View {
                     HStack {
                         Label(L("settings.menubar.notifications"), systemImage: "bell")
                         Spacer()
-                        Picker("", selection: $appState.menubarNotificationStyle) {
-                            Text(L("settings.menubar.notifications.both")).tag("both")
-                            Text(L("settings.menubar.notifications.count")).tag("count")
-                            Text(L("settings.menubar.notifications.icons")).tag("icons")
-                            Text(L("settings.menubar.notifications.none")).tag("none")
+                        ZStack {
+                            Picker("", selection: $appState.menubarNotificationStyle) {
+                                Text(L("settings.menubar.notifications.both")).tag("both")
+                                Text(L("settings.menubar.notifications.count")).tag("count")
+                                Text(L("settings.menubar.notifications.icons")).tag("icons")
+                                Text(L("settings.menubar.notifications.none")).tag("none")
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                            .disabled(!appState.isPlus && appState.licenseCheck)
+
+                            if !appState.isPlus && appState.licenseCheck {
+                                Color.clear
+                                    .contentShape(Rectangle())
+                                    .onTapGesture {
+                                        plusPopoverMessage = L("settings.menubar.notifications.plusFeatureMessage")
+                                        showingPlusPopover = true
+                                    }
+                            }
                         }
-                        .pickerStyle(MenuPickerStyle())
                     }
 
                     if appState.menubarNotificationStyle == "count" || appState.menubarNotificationStyle == "both" {
@@ -159,6 +186,12 @@ struct MenubarSettingsView: View {
                 }
                 .padding()
                 .glassBoxIfAvailable(radius: 18)
+            }
+            .popover(isPresented: $showingPlusPopover, arrowEdge: .bottom) {
+                PlusFeaturePopover(message: plusPopoverMessage)
+                    .onTapGesture {
+                        showingPlusPopover = false
+                    }
             }
             .padding()
             .animation(.spring(), value: appState.showMenubarText)

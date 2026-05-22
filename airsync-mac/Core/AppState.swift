@@ -144,6 +144,11 @@ class AppState: ObservableObject {
         }
         #endif
 
+        if !self.isPlus && licenseCheck {
+            self.showMenubarAlbumArt = false
+            self.menubarNotificationStyle = "count"
+        }
+
         loadAppsFromDisk()
         loadPinnedApps()
         
@@ -626,6 +631,8 @@ class AppState: ObservableObject {
                 if isFileAccessEnabled {
                     isFileAccessEnabled = false
                 }
+                showMenubarAlbumArt = false
+                menubarNotificationStyle = "count"
             }
             // Notify about license status change for icon revert logic
             NotificationCenter.default.post(name: NSNotification.Name("LicenseStatusChanged"), object: nil)

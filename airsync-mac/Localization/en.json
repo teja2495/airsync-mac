@@ -126,5 +126,7 @@
   "settings.menubar.notifications.icons": "Icons Only",
   "settings.menubar.notifications.none": "None",
   "settings.menubar.showAlbumArt": "Show album art",
-  "settings.menubar.fontSize": "Font size"
+  "settings.menubar.fontSize": "Font size",
+  "settings.menubar.albumArt.plusFeatureMessage": "Show Album Art is an AirSync+ feature",
+  "settings.menubar.notifications.plusFeatureMessage": "Notification styles are available in AirSync+"
 }
