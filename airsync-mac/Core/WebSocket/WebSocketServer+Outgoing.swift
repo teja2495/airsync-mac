@@ -128,6 +128,11 @@ extension WebSocketServer {
                 
                 BLECentralManager.shared.writeChunked(characteristicUUID: BLEConstants.charMacMediaState, payload: payload)
             }
+        case "toggleAppNotif":
+            if let package = data["package"] as? String, let state = data["state"] as? String {
+                let payload = "toggleNotif|\(package)|\(state)"
+                BLECentralManager.shared.writeChunked(characteristicUUID: BLEConstants.charMediaControl, payload: payload)
+            }
         case "disconnectRequest":
             // Maybe handle disconnect?
             break
