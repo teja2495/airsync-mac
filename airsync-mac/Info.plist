@@ -59,15 +59,21 @@
 			<key>NSMenuItem</key>
 			<dict>
 				<key>default</key>
-				<string>Send via AirSync</string>
+				<string>Send File via AirSync</string>
 			</dict>
 			<key>NSMessage</key>
 			<string>handleServices</string>
 			<key>NSPortName</key>
 			<string>AirSync</string>
-			<key>NSSendFileTypes</key>
+			<key>NSRequiredContext</key>
+			<dict>
+				<key>NSTextContent</key>
+				<string>FilePath</string>
+			</dict>
+			<key>NSSendTypes</key>
 			<array>
-				<string>public.item</string>
+				<string>NSFilenamesPboardType</string>
+				<string>public.plain-text</string>
 			</array>
 		</dict>
 	</array>

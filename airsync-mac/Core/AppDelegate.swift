@@ -57,9 +57,26 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func handleServices(_ pboard: NSPasteboard, userData: String, error: AutoreleasingUnsafeMutablePointer<NSString>) {
-        if let urls = pboard.readObjects(forClasses: [NSURL.self], options: nil) as? [URL], !urls.isEmpty {
+        var urls = pboard.readObjects(
+            forClasses: [NSURL.self],
+            options: [.urlReadingFileURLsOnly: true]
+        ) as? [URL] ?? []
+
+        if urls.isEmpty {
+            let filenamesType = NSPasteboard.PasteboardType("NSFilenamesPboardType")
+            urls = (pboard.propertyList(forType: filenamesType) as? [String] ?? [])
+                .map { URL(fileURLWithPath: $0) }
+        }
+
+        let plainTextType = NSPasteboard.PasteboardType("public.plain-text")
+        let plainTextPath = pboard.string(forType: plainTextType) ?? pboard.string(forType: .string)
+        if urls.isEmpty, let path = plainTextPath, !path.isEmpty {
+            urls = [URL(fileURLWithPath: path)]
+        }
+
+        if !urls.isEmpty {
             QuickShareManager.shared.transferURLs = urls
-            QuickShareManager.shared.startDiscovery(autoTargetName: nil)
+            QuickShareManager.shared.startDiscovery(autoTargetName: AppState.shared.device?.name)
             AppState.shared.showingQuickShareTransfer = true
         }
     }
