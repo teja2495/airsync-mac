@@ -29,15 +29,15 @@ class AppState: ObservableObject {
     @Published var isOS26: Bool = true
 
     init() {
-        let isPlusLoaded = UserDefaults.standard.bool(forKey: "isPlus")
-        self.isPlus = isPlusLoaded
+        self.isPlus = true
+        UserDefaults.standard.set(true, forKey: "isPlus")
 
         let adbPortValue = UserDefaults.standard.integer(forKey: "adbPort")
         self.adbPort = adbPortValue == 0 ? 5555 : UInt16(adbPortValue)
         self.adbConnectedIP = UserDefaults.standard.string(forKey: "adbConnectedIP") ?? ""
-        self.mirroringPlus = UserDefaults.standard.bool(forKey: "mirroringPlus")
-        self.adbEnabled = UserDefaults.standard.bool(forKey: "adbEnabled")
-        self.wiredAdbEnabled = UserDefaults.standard.bool(forKey: "wiredAdbEnabled")
+        self.mirroringPlus = UserDefaults.standard.object(forKey: "mirroringPlus") == nil ? true : UserDefaults.standard.bool(forKey: "mirroringPlus")
+        self.adbEnabled = UserDefaults.standard.object(forKey: "adbEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "adbEnabled")
+        self.wiredAdbEnabled = UserDefaults.standard.object(forKey: "wiredAdbEnabled") == nil ? true : UserDefaults.standard.bool(forKey: "wiredAdbEnabled")
         self.suppressAdbFailureAlerts = UserDefaults.standard.bool(forKey: "suppressAdbFailureAlerts")
         
         let savedFallbackToMdns = UserDefaults.standard.object(forKey: "fallbackToMdns")
@@ -53,11 +53,7 @@ class AppState: ObservableObject {
         self.menubarBatteryStyle = UserDefaults.standard.string(forKey: "menubarBatteryStyle") ?? "both"
         self.showMenubarMusicIcon = UserDefaults.standard.object(forKey: "showMenubarMusicIcon") == nil ? true : UserDefaults.standard.bool(forKey: "showMenubarMusicIcon")
         self.showMenubarAlbumArt = UserDefaults.standard.object(forKey: "showMenubarAlbumArt") == nil ? true : UserDefaults.standard.bool(forKey: "showMenubarAlbumArt")
-        if UserDefaults.standard.object(forKey: "showMenubarCallDetails") == nil {
-            self.showMenubarCallDetails = isPlusLoaded
-        } else {
-            self.showMenubarCallDetails = UserDefaults.standard.bool(forKey: "showMenubarCallDetails") && (!licenseCheck || isPlusLoaded)
-        }
+        self.showMenubarCallDetails = UserDefaults.standard.object(forKey: "showMenubarCallDetails") == nil ? true : UserDefaults.standard.bool(forKey: "showMenubarCallDetails")
         self.menubarFontSize = UserDefaults.standard.object(forKey: "menubarFontSize") == nil ? 12.0 : UserDefaults.standard.double(forKey: "menubarFontSize")
         self.menubarUnreadBadgeStyle = UserDefaults.standard.string(forKey: "menubarUnreadBadgeStyle") ?? "badge"
         self.menubarUnreadBadgeColor = UserDefaults.standard.string(forKey: "menubarUnreadBadgeColor") ?? "accent"
@@ -140,22 +136,7 @@ class AppState: ObservableObject {
             startClipboardMonitoring()
         }
 
-        #if SELF_COMPILED
-        self.isPlus = true
-        UserDefaults.standard.set(true, forKey: "isPlus")
-        UserDefaults.standard.lastLicenseSuccessfulCheckDate = Date().addingTimeInterval(-(24 * 60 * 60))
-        #else
-        Task {
-            // Delay startup check by 5 minutes (300 seconds) to ensure network connection is fully established
-            try? await Task.sleep(nanoseconds: 300_000_000_000)
-            await Gumroad().checkLicenseIfNeeded()
-        }
-        #endif
-
-        if !self.isPlus && licenseCheck {
-            self.showMenubarAlbumArt = false
-            self.menubarNotificationStyle = "count"
-        }
+        UserDefaults.standard.lastLicenseSuccessfulCheckDate = Date()
 
         loadAppsFromDisk()
         loadPinnedApps()
@@ -681,6 +662,12 @@ class AppState: ObservableObject {
 
     @Published var isPlus: Bool {
         didSet {
+            if !isPlus {
+                shouldSkipSave = true
+                isPlus = true
+                shouldSkipSave = false
+                return
+            }
             if !shouldSkipSave {
                 UserDefaults.standard.set(isPlus, forKey: "isPlus")
             }

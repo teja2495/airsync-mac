@@ -233,19 +233,9 @@ final class TrialManager: ObservableObject {
     }
 
     private func syncEntitlementWithAppState() {
-        #if SELF_COMPILED
-        // In self-compiled builds, Plus is always enabled - don't override it
-        return
-        #endif
         let appState = AppState.shared
-        if isTrialActive {
-            if !appState.isPlus {
-                appState.isPlus = true
-            }
-        } else if appState.licenseDetails == nil {
-            if appState.isPlus {
-                appState.isPlus = false
-            }
+        if !appState.isPlus {
+            appState.isPlus = true
         }
     }
 
