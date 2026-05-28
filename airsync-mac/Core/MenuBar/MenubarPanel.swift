@@ -22,12 +22,31 @@ class MenubarPanel: NSPanel {
         self.collectionBehavior = [.canJoinAllSpaces, .ignoresCycle]
         self.backgroundColor = .clear
         self.isOpaque = false
-        self.hasShadow = false
+        self.hasShadow = true
+        self.contentView?.wantsLayer = true
+
+        let containerView = NSView(frame: contentRect)
+        containerView.wantsLayer = true
+        containerView.layer?.cornerRadius = 24
+        containerView.layer?.masksToBounds = true
+        containerView.layer?.backgroundColor = NSColor(
+            calibratedWhite: 0.14,
+            alpha: 0.985
+        ).cgColor
+        containerView.layer?.borderWidth = 1
+        containerView.layer?.borderColor = NSColor.white.withAlphaComponent(0.12).cgColor
         
         let hostingView = NSHostingView(rootView: rootView)
-        hostingView.frame = self.contentView?.bounds ?? .zero
-        hostingView.autoresizingMask = [.width, .height]
-        self.contentView = hostingView
+        hostingView.translatesAutoresizingMaskIntoConstraints = false
+        containerView.addSubview(hostingView)
+        NSLayoutConstraint.activate([
+            hostingView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
+            hostingView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
+            hostingView.topAnchor.constraint(equalTo: containerView.topAnchor),
+            hostingView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor)
+        ])
+
+        self.contentView = containerView
         self.becomesKeyOnlyIfNeeded = false
     }
 

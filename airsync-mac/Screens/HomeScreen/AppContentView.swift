@@ -14,6 +14,57 @@ struct AppContentView: View {
     @AppStorage("notificationStacks") private var notificationStacks = true
     @State private var showDisconnectAlert = false
 
+    private var visibleTabs: [TabIdentifier] {
+        if appState.device == nil {
+            return [.qr, .settings]
+        }
+        return [.blank, .settings]
+    }
+
+    private var preferredTab: TabIdentifier {
+        appState.device == nil ? .qr : .blank
+    }
+
+    private var notificationsTab: some View {
+        NotificationView()
+            .tabItem {
+                Image(systemName: "bell.badge")
+                //                        Label("Notifications", systemImage: "bell.badge")
+            }
+            .tag(TabIdentifier.notifications)
+            .toolbar {
+                if appState.notifications.count > 0 || appState.callEvents.count > 0 {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            notificationStacks.toggle()
+                        } label: {
+                            Label("Toggle Notification Stacks", systemImage: notificationStacks ? "mail" : "mail.stack")
+                        }
+                        .help(notificationStacks ? "Switch to stacked view" : "Switch to expanded view")
+                    }
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            appState.clearNotifications()
+                        } label: {
+                            Label("Clear", systemImage: "wind")
+                        }
+                        .help("Clear all notifications")
+                        .keyboardShortcut(.delete, modifiers: .command)
+                        .badge(appState.notifications.count + appState.callEvents.count)
+                    }
+                }
+            }
+    }
+
+    private var appsTab: some View {
+        AppsView()
+            .tabItem {
+                Image(systemName: "app")
+                //                        Label("Apps", systemImage: "app")
+            }
+            .tag(TabIdentifier.apps)
+    }
+
     var body: some View {
         TabView(selection: $appState.selectedTab) {
             // QR Scanner Tab (only when device is NOT connected)
@@ -43,45 +94,13 @@ struct AppContentView: View {
                     }
             }
 
-            // Notifications Tab (only when device connected)
+            // Placeholder tab shown instead of notifications/apps while keeping their code in place.
             if appState.device != nil {
-                NotificationView()
+                BlankTabView()
                     .tabItem {
-                        Image(systemName: "bell.badge")
-                        //                        Label("Notifications", systemImage: "bell.badge")
+                        Image(systemName: "iphone")
                     }
-                    .tag(TabIdentifier.notifications)
-                    .toolbar {
-                        if appState.notifications.count > 0 || appState.callEvents.count > 0 {
-                            ToolbarItem(placement: .primaryAction) {
-                                Button {
-                                    notificationStacks.toggle()
-                                } label: {
-                                    Label("Toggle Notification Stacks", systemImage: notificationStacks ? "mail" : "mail.stack")
-                                }
-                                .help(notificationStacks ? "Switch to stacked view" : "Switch to expanded view")
-                            }
-                            ToolbarItem(placement: .primaryAction) {
-                                Button {
-                                    appState.clearNotifications()
-                                } label: {
-                                    Label("Clear", systemImage: "wind")
-                                }
-                                .help("Clear all notifications")
-                                .keyboardShortcut(.delete, modifiers: .command)
-                                .badge(appState.notifications.count + appState.callEvents.count)
-                            }
-                        }
-                    }
-
-                // Apps Tab
-                AppsView()
-                    .tabItem {
-                        Image(systemName: "app")
-                        //                        Label("Apps", systemImage: "app")
-                    }
-                    .tag(TabIdentifier.apps)
-
+                    .tag(TabIdentifier.blank)
             }
 
             // Settings Tab
@@ -121,12 +140,10 @@ struct AppContentView: View {
         .tabViewStyle(.automatic)
         .frame(minWidth: 550, minHeight: 510)
         .onAppear {
-            // Ensure the correct tab is selected when the view appears
-            if appState.device == nil {
-                AppState.shared.selectedTab = .qr
-            } else {
-                AppState.shared.selectedTab = .notifications
-            }
+            ensureValidSelection()
+        }
+        .onChange(of: appState.device) { _, _ in
+            ensureValidSelection()
         }
         .sheet(isPresented: $showAboutSheet) {
             AboutView(onClose: { showAboutSheet = false })
@@ -147,6 +164,11 @@ struct AppContentView: View {
                 secondaryButton: .cancel()
             )
         }
+    }
+
+    private func ensureValidSelection() {
+        guard !visibleTabs.contains(appState.selectedTab) else { return }
+        appState.selectedTab = preferredTab
     }
 }
 

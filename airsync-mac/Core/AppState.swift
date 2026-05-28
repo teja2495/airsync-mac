@@ -178,7 +178,7 @@ class AppState: ObservableObject {
             if device == nil {
                 self.selectedTab = .qr
             } else if oldValue == nil {
-                self.selectedTab = .notifications
+                self.selectedTab = .blank
             }
 
             // BLE scan management: pause when a regular (non-BLE) connection is active
@@ -948,6 +948,10 @@ class AppState: ObservableObject {
         DispatchQueue.main.async {
             // Send request to remote device to disconnect
             WebSocketServer.shared.sendDisconnectRequest()
+
+            // Always return to the QR/connect screen after disconnect
+            self.selectedTab = .qr
+            self.shouldRefreshQR = true
 
             // Then locally reset state
             self.device = nil

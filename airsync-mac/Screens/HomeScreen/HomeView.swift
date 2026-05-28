@@ -14,6 +14,18 @@ struct HomeView: View {
     @AppStorage("hasPairedDeviceOnce") private var hasPairedDeviceOnce: Bool = false
     @State var showOnboarding = false
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
+
+    private var showsQRSidebar: Bool {
+        appState.selectedTab == .qr
+    }
+
+    private var showsSettingsSidebar: Bool {
+        appState.selectedTab == .settings
+    }
+
+    private var showsSidebar: Bool {
+        showsQRSidebar || showsSettingsSidebar
+    }
     
     private var needsOnboarding: Bool {
         // Show onboarding if either:
@@ -23,22 +35,21 @@ struct HomeView: View {
     }
 
     var body: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            ZStack {
-                if appState.selectedTab == .settings {
-                    SettingsSidebarView()
-                        .transition(.opacity.combined(with: .scale))
-                } else if appState.device == nil {
-                    QRScannerSidebarView()
-                        .transition(.opacity.combined(with: .scale))
-                } else {
-                    SidebarView()
-                        .transition(.opacity.combined(with: .scale))
+        Group {
+            if showsSidebar {
+                NavigationSplitView(columnVisibility: $columnVisibility) {
+                    if showsQRSidebar {
+                        QRScannerSidebarView()
+                    } else {
+                        SettingsSidebarView()
+                    }
+                } detail: {
+                    AppContentView()
                 }
+                .navigationSplitViewColumnWidth(min: 270, ideal: 270)
+            } else {
+                AppContentView()
             }
-            .frame(minWidth: 270)
-        } detail: {
-            AppContentView()
         }
         .navigationTitle("")
         .background(.background.opacity(appState.windowOpacity))
@@ -46,6 +57,7 @@ struct HomeView: View {
             .clear,
             for: .windowToolbar
         )
+        .toolbar(removing: .sidebarToggle)
         // Show onboarding sheet when needed
         .onAppear {
             if needsOnboarding {
@@ -56,6 +68,14 @@ struct HomeView: View {
         }
         .onChange(of: appState.device) { _, _ in
             updateSidebarVisibility()
+        }
+        .onChange(of: appState.selectedTab) { _, _ in
+            updateSidebarVisibility()
+        }
+        .onChange(of: columnVisibility) { _, newValue in
+            if showsSidebar && newValue != .all {
+                columnVisibility = .all
+            }
         }
         .sheet(isPresented: $showOnboarding) {
             OnboardingView()
@@ -73,7 +93,7 @@ struct HomeView: View {
 
     private func updateSidebarVisibility() {
         withAnimation(.easeInOut(duration: 0.3)) {
-            columnVisibility = .all
+            columnVisibility = showsSidebar ? .all : .detailOnly
         }
     }
 }

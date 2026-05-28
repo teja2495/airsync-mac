@@ -204,7 +204,13 @@ struct airsync_macApp: App {
                 }
             }
             .background(WindowAccessor(callback: { window in
+                window.level = .statusBar
+                window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+                window.isMovableByWindowBackground = true
                 window.isRestorable = false
+                NSApp.activate(ignoringOtherApps: true)
+                window.makeKeyAndOrderFront(nil)
+                window.orderFrontRegardless()
             }))
         }
         .defaultPosition(.topTrailing)

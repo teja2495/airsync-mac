@@ -33,7 +33,7 @@ struct QRScannerSidebarView: View {
         
         VStack(spacing: 16) {
 
-                Text("Scan to connect")
+                Text("Connect new device")
                     .font(.title3)
                     .fontWeight(.bold)
             .padding(.horizontal, 16)

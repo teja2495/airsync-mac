@@ -91,8 +91,6 @@ struct ScannerView: View {
                     .transition(.opacity)
 
                     let devices = Array(allDiscoveredDevices.prefix(4))
-                    let lastConnected = quickConnectManager.getLastConnectedDevice()
-                    
                     VStack {
                         Spacer()
                         if devices.count == 1 {
@@ -100,7 +98,7 @@ struct ScannerView: View {
                                 Spacer()
                                 DeviceCard(
                                     device: devices[0],
-                                    isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, devices[0].name),
+                                    isLastConnected: false,
                                     connectAction: {
                                         if devices[0].type == "ble" {
                                             bleManager.connectManually(toUuid: devices[0].deviceId)
@@ -119,7 +117,7 @@ struct ScannerView: View {
                                 ForEach(devices) { device in
                                     DeviceCard(
                                         device: device,
-                                        isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, device.name),
+                                        isLastConnected: false,
                                         connectAction: {
                                             if device.type == "ble" {
                                                 bleManager.connectManually(toUuid: device.deviceId)
@@ -146,7 +144,7 @@ struct ScannerView: View {
                                                 let device = devices[index]
                                                 DeviceCard(
                                                     device: device,
-                                                    isLastConnected: lastConnected != nil && ScannerView.namesAreSimilar(lastConnected!.name, device.name),
+                                                    isLastConnected: false,
                                                     connectAction: {
                                                         if device.type == "ble" {
                                                             bleManager.connectManually(toUuid: device.deviceId)
@@ -177,6 +175,7 @@ struct ScannerView: View {
         }
         .frame(minWidth: 320)
         .onAppear {
+            quickConnectManager.clearAllLastConnectedDevices()
             // Refresh device info for current network on load
             quickConnectManager.refreshDeviceForCurrentNetwork()
         }

@@ -61,6 +61,15 @@ class QuickConnectManager: ObservableObject {
         }
         print("[quick-connect] Cleared last connected device for network \(currentMacIP)")
     }
+
+    /// Clears all saved last connected devices across networks
+    func clearAllLastConnectedDevices() {
+        DispatchQueue.main.async {
+            self.lastConnectedDevices.removeAll()
+            self.saveDeviceHistoryToDisk()
+        }
+        print("[quick-connect] Cleared all saved last connected devices")
+    }
     
     /// Attempts to wake up and reconnect to a specific discovered device
     func connect(to discoveredDevice: DiscoveredDevice) {

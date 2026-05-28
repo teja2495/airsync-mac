@@ -11,6 +11,12 @@ struct SettingsSidebarView: View {
     @ObservedObject var appState = AppState.shared
     @State private var hoveredTab: SettingsTab? = nil
 
+    private var visibleTabs: [SettingsTab] {
+        SettingsTab.allCases.filter { tab in
+            tab != .mirroring && tab != .airsyncPlus
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
@@ -22,7 +28,7 @@ struct SettingsSidebarView: View {
 
             ScrollView {
                 VStack(spacing: 4) {
-                    ForEach(SettingsTab.allCases) { tab in
+                    ForEach(visibleTabs) { tab in
                         categoryRow(for: tab)
                     }
                 }

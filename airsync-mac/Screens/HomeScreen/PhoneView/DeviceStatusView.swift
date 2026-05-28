@@ -15,11 +15,14 @@ struct DeviceStatusView: View {
     @State private var showingPlusPopover = false
     var showMediaToggle: Bool = true
     var useGlass: Bool = true
+    var showMediaCard: Bool = true
+    var showStatusControls: Bool = true
+    var showsBottomPadding: Bool = true
 
     var body: some View {
 
         VStack {
-            if let music = appState.status?.music {
+            if showMediaCard, let music = appState.status?.music {
                 let title = music.title.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !title.isEmpty && !appState.isMusicCardHidden && showMediaToggle {
                     MediaPlayerView(music: music)
@@ -27,92 +30,96 @@ struct DeviceStatusView: View {
                 }
             }
 
-            HStack(spacing: 8) {
-                let batteryLevel = appState.status?.battery.level ?? 100
-                let batteryIsCharging = appState.status?.battery.isCharging ?? false
+            if showStatusControls {
+                HStack(spacing: 8) {
+                    let batteryLevel = appState.status?.battery.level ?? 100
+                    let batteryIsCharging = appState.status?.battery.isCharging ?? false
 
 
-                HStack{
-                    Image(systemName: batteryIcon(for: batteryLevel, isCharging: batteryIsCharging))
-                        .help("\(batteryLevel)%")
-                        .contentTransition(.symbolEffect)
-                    Text("\(batteryLevel)%")
-                        .font(.caption2)
-                }
-                .padding(.leading, 4)
-
-                let volume = appState.status?.music?.volume ?? 100
-                let isMuted = appState.status?.music?.isMuted ?? false
-
-                GlassButtonView(
-                    label: "Music Player",
-                    systemImage: volumeIcon(for: volume, isMuted: isMuted),
-                    iconOnly: true,
-                    primary: false,
-                    action: {
-                        if AppState.shared.isPlus && AppState.shared.licenseCheck {
-                            if let currentVolume = appState.status?.music?.volume {
-                                tempVolume = Double(currentVolume)
-                            }
-                            showingVolumePopover.toggle()
-                        } else {
-                            showingPlusPopover = true
-                        }
+                    HStack{
+                        Image(systemName: batteryIcon(for: batteryLevel, isCharging: batteryIsCharging))
+                            .help("\(batteryLevel)%")
+                            .contentTransition(.symbolEffect)
+                        Text("\(batteryLevel)%")
+                            .font(.caption2)
                     }
-                )
-                .help(isMuted ? "Muted" : "\(volume)%")
-                .contentTransition(.symbolEffect)
-                    .popover(isPresented: $showingVolumePopover, arrowEdge: .bottom) {
-                        VStack {
-                            HStack {
-                                Image(systemName: "speaker.fill")
+                    .padding(.leading, 4)
 
-                                Slider(
-                                    value: $tempVolume,
-                                    in: 0...100,
-                                    onEditingChanged: { editing in
-                                        if !editing {
-                                            WebSocketServer.shared.setVolume(Int(tempVolume))
+                    let volume = appState.status?.music?.volume ?? 100
+                    let isMuted = appState.status?.music?.isMuted ?? false
+
+                    GlassButtonView(
+                        label: "Music Player",
+                        systemImage: volumeIcon(for: volume, isMuted: isMuted),
+                        iconOnly: true,
+                        primary: false,
+                        action: {
+                            if AppState.shared.isPlus && AppState.shared.licenseCheck {
+                                if let currentVolume = appState.status?.music?.volume {
+                                    tempVolume = Double(currentVolume)
+                                }
+                                showingVolumePopover.toggle()
+                            } else {
+                                showingPlusPopover = true
+                            }
+                        }
+                    )
+                    .help(isMuted ? "Muted" : "\(volume)%")
+                    .contentTransition(.symbolEffect)
+                        .popover(isPresented: $showingVolumePopover, arrowEdge: .bottom) {
+                            VStack {
+                                HStack {
+                                    Image(systemName: "speaker.fill")
+
+                                    Slider(
+                                        value: $tempVolume,
+                                        in: 0...100,
+                                        onEditingChanged: { editing in
+                                            if !editing {
+                                                WebSocketServer.shared.setVolume(Int(tempVolume))
+                                            }
+                                            isDragging = editing
                                         }
-                                        isDragging = editing
-                                    }
-                                )
-                                .focusable(false)
+                                    )
+                                    .focusable(false)
 
-                                Image(systemName: "speaker.wave.3.fill")
-                            }
-                        }
-                        .padding()
-                        .frame(width: 200)
-                    }
-                    .popover(isPresented: $showingPlusPopover, arrowEdge: .bottom) {
-                        PlusFeaturePopover(message: "Control volume with AirSync+")
-                    }
- 
-                if let music = appState.status?.music {
-                    let title = music.title.trimmingCharacters(in: .whitespacesAndNewlines)
-                    if !title.isEmpty && showMediaToggle {
-                        GlassButtonView(
-                            label: "Music Player",
-                            systemImage: music.isPlaying == true ? "play.rectangle" : "music.note",
-                            iconOnly: true,
-                            primary: false,
-                            action: {
-                                withAnimation(.easeInOut(duration: 0.28)) {
-                                    appState.isMusicCardHidden.toggle()
+                                    Image(systemName: "speaker.wave.3.fill")
                                 }
                             }
-                        )
-                        .help(appState.isMusicCardHidden ? "Show player" : "Hide player")
-                        .transition(.opacity.combined(with: .scale))
+                            .padding()
+                            .frame(width: 200)
+                        }
+                        .popover(isPresented: $showingPlusPopover, arrowEdge: .bottom) {
+                            PlusFeaturePopover(message: "Control volume with AirSync+")
+                        }
+
+                    if let music = appState.status?.music {
+                        let title = music.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !title.isEmpty && showMediaToggle {
+                            GlassButtonView(
+                                label: "Music Player",
+                                systemImage: music.isPlaying == true ? "play.rectangle" : "music.note",
+                                iconOnly: true,
+                                primary: false,
+                                action: {
+                                    withAnimation(.easeInOut(duration: 0.28)) {
+                                        appState.isMusicCardHidden.toggle()
+                                    }
+                                }
+                            )
+                            .help(appState.isMusicCardHidden ? "Show player" : "Hide player")
+                            .transition(.opacity.combined(with: .scale))
+                        }
                     }
                 }
+                .padding(.bottom, showsBottomPadding && !appState.isMusicCardHidden ? 8 : 0)
             }
-            .padding(.bottom, appState.isMusicCardHidden ? 0 : 8)
 
         }
         .padding(4)
-        .applyGlassViewIfAvailable()
+        .if(useGlass) { view in
+            view.applyGlassViewIfAvailable()
+        }
         .animation(
             .easeInOut(duration: 0.25),
             value: "\(appState.status?.battery.level ?? 0)-\(appState.status?.music?.volume ?? 0)"
@@ -178,6 +185,17 @@ struct DeviceStatusView: View {
             return "speaker.wave.2"
         } else {
             return "speaker.wave.3"
+        }
+    }
+}
+
+private extension View {
+    @ViewBuilder
+    func `if`<Content: View>(_ condition: Bool, transform: (Self) -> Content) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
         }
     }
 }

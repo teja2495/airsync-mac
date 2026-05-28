@@ -8,6 +8,7 @@
 import SwiftUI
 
 enum TabIdentifier: String, CaseIterable, Identifiable {
+    case blank = "blank.tab"
     case notifications = "notifications.tab"
     case apps = "apps.tab"
     case settings = "settings.tab"
@@ -17,6 +18,7 @@ enum TabIdentifier: String, CaseIterable, Identifiable {
 
     var icon: String {
         switch self {
+        case .blank: return "iphone"
         case .notifications: return "bell.badge"
         case .apps: return "app"
         case .settings: return "gear"
@@ -26,8 +28,9 @@ enum TabIdentifier: String, CaseIterable, Identifiable {
 
     var shortcut: KeyEquivalent {
         switch self {
-        case .notifications: return "1"
-        case .apps: return "2"
+        case .blank: return "1"
+        case .notifications: return "2"
+        case .apps: return "3"
         case .settings: return ","
         case .qr: return "."
         }
@@ -37,8 +40,7 @@ enum TabIdentifier: String, CaseIterable, Identifiable {
         var tabs: [TabIdentifier] = [.qr, .settings]
         if AppState.shared.device != nil {
             tabs.remove(at: 0)
-            tabs.insert(.notifications, at: 0)
-            tabs.insert(.apps, at: 1)
+            tabs.insert(.blank, at: 0)
         }
         return tabs
     }

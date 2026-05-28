@@ -138,14 +138,19 @@ struct TopSegmentView: View {
                         appState.silenceAllNotifications.toggle()
                     }
                 }
-                
-                if appState.adbConnected && !appState.recentApps.isEmpty {
-                    RecentAppsGridView()
+
+                if appState.status != nil {
+                    DeviceStatusView(
+                        showMediaToggle: false,
+                        useGlass: false,
+                        showMediaCard: false,
+                        showsBottomPadding: false
+                    )
+                    .padding(.top, 4)
                 }
             }
         }
         .padding(12)
-        .segmentStyle()
     }
     
     private func sendClipboard() {
@@ -190,10 +195,17 @@ struct MediaSegmentView: View {
     @ObservedObject var appState = AppState.shared
     
     var body: some View {
-        if let status = appState.status {
-            DeviceStatusView(showMediaToggle: true)
+        if let status = appState.status,
+           let music = status.music {
+            let title = music.title.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !title.isEmpty {
+                DeviceStatusView(
+                    showMediaToggle: true,
+                    showMediaCard: true,
+                    showStatusControls: false
+                )
                 .background {
-                    let artwork = status.music?.albumArt ?? ""
+                    let artwork = music.albumArt ?? ""
                     if !appState.isMusicCardHidden,
                        !artwork.isEmpty,
                        let data = Data(base64Encoded: artwork),
@@ -206,6 +218,7 @@ struct MediaSegmentView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20))
                 .transition(.scale.combined(with: .opacity))
                 .animation(.interpolatingSpring(stiffness: 200, damping: 30), value: appState.isMusicCardHidden)
+            }
         }
     }
 }
@@ -248,6 +261,3 @@ struct NotificationsSegmentView: View {
         }
     }
 }
-
-
-
